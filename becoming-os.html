@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Becoming OS</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Becoming OS">
+<meta name="theme-color" content="#f5f1eb">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI0IiBmaWxsPSIjMWExNzEyIi8+PHBhdGggZD0iTTI4IDI0aDI4YzEyIDAgMjIgOCAyMiAyMHMtNiAxNS0xNCAxN2M5IDIgMTYgOSAxNiAyMHMtMTAgMjEtMjQgMjFIMjh6TTQ0IDUzaDEwYzYgMCAxMC00IDEwLTEwcy00LTktMTAtOUg0NHptMCA0MmgxMmM3IDAgMTItNSAxMi0xMXMtNS0xMS0xMi0xMUg0NHoiIGZpbGw9IiNjOGE5NmUiLz48ZWxsaXBzZSBjeD0iOTIiIGN5PSIzMiIgcng9IjE0IiByeT0iOCIgZmlsbD0iI2M0N2E2YSIgb3BhY2l0eT0iLjkiIHRyYW5zZm9ybT0icm90YXRlKC0zMCA5MiAzMikiLz48ZWxsaXBzZSBjeD0iOTYiIGN5PSI0OCIgcng9IjEwIiByeT0iNiIgZmlsbD0iI2M0N2E2YSIgb3BhY2l0eT0iLjciIHRyYW5zZm9ybT0icm90YXRlKDIwIDk2IDQ4KSIvPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMzgiIHI9IjIiIGZpbGw9IiMxYTE3MTIiLz48bGluZSB4MT0iODgiIHkxPSIzNiIgeDI9Ijg2IiB5Mj0iMzAiIHN0cm9rZT0iIzFhMTcxMiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48bGluZSB4MT0iODgiIHkxPSIzNiIgeDI9IjkwIiB5Mj0iMzAiIHN0cm9rZT0iIzFhMTcxMiIgc3Ryb2tlLXdpZHRoPSIxLjUiLz48L3N2Zz4=">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='24' fill='%231a1712'/%3E%3Cpath d='M28 24h28c12 0 22 8 22 20s-6 15-14 17c9 2 16 9 16 20s-10 21-24 21H28zM44 53h10c6 0 10-4 10-10s-4-9-10-9H44zm0 42h12c7 0 12-5 12-11s-5-11-12-11H44z' fill='%23c8a96e'/%3E%3Cellipse cx='92' cy='32' rx='14' ry='8' fill='%23c47a6a' opacity='.9' transform='rotate(-30 92 32)'/%3E%3Cellipse cx='96' cy='48' rx='10' ry='6' fill='%23c47a6a' opacity='.7' transform='rotate(20 96 48)'/%3E%3Ccircle cx='88' cy='38' r='2' fill='%231a1712'/%3E%3Cline x1='88' y1='36' x2='86' y2='30' stroke='%231a1712' stroke-width='1.5'/%3E%3Cline x1='88' y1='36' x2='90' y2='30' stroke='%231a1712' stroke-width='1.5'/%3E%3C/svg%3E">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,200;1,300&display=swap');
+:root {
+  --bg:#f5f1eb;--surface:#ffffff;--surface2:#f0ece4;--border:#ddd8ce;--border2:#c8c0b0;
+  --ink:#1a1712;--ink2:#4a4538;--gold:#8a6a2a;--gold-light:#c8a96e;--gold-bg:#faf5e8;
+  --blush:#a04830;--blush-bg:#fdf0ec;--sage:#3d6b48;--text:#6a6050;--text2:#9a9080;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--ink);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden;}
+.screen{display:none;min-height:100vh;flex-direction:column;animation:fadeUp .35s ease forwards;}
+.screen.active{display:flex;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.scroll-content{flex:1;overflow-y:auto;padding-bottom:90px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);}
+.topbar-title{font-family:'Tenor Sans',serif;font-size:13px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;}
+.back-btn{font-size:11px;letter-spacing:.2em;color:var(--text2);text-transform:uppercase;cursor:pointer;}
+.back-btn:active{color:var(--gold);}
+.home-hero{padding:44px 24px 32px;border-bottom:2px solid var(--border);text-align:center;}
+.greeting{font-size:10px;letter-spacing:.4em;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
+.home-name{font-family:'Tenor Sans',serif;font-size:44px;line-height:1;color:var(--ink);}
+.home-name em{font-style:italic;color:var(--gold);}
+.pillars-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;justify-content:center;}
+.pillar-tag{font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:5px 12px;border:1px solid var(--border2);color:var(--text);background:var(--surface);}
+.meta-row{display:flex;align-items:center;gap:10px;margin-top:14px;justify-content:center;flex-wrap:wrap;}
+.home-date{font-size:12px;color:var(--text2);}
+.streak-pill{display:inline-flex;align-items:center;gap:5px;background:var(--gold-bg);border:1px solid var(--gold-light);padding:5px 12px;font-size:11px;color:var(--gold);}
+.section-pad{padding:22px 20px;}
+.section-label{font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.g-input{background:var(--surface);border:1px solid var(--border);padding:11px 14px;color:var(--ink);font-family:'Jost',sans-serif;font-size:14px;font-weight:300;width:100%;transition:border-color .2s;margin-bottom:8px;display:block;}
+.g-input:focus{outline:none;border-color:var(--gold);}
+.g-input::placeholder{color:var(--text2);font-style:italic;}
+.priority-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.priority-num{font-size:13px;color:var(--gold);min-width:18px;font-family:'Tenor Sans',serif;}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.metric-card{background:var(--surface);border:1px solid var(--border);padding:14px;}
+.metric-name{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;}
+.metric-slider{width:100%;accent-color:var(--gold);cursor:pointer;display:block;margin:4px 0;}
+.metric-val{font-family:'Tenor Sans',serif;font-size:22px;color:var(--gold);margin-top:4px;}
+.domain-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 20px;}
+.domain-tile{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--border2);padding:18px 14px;cursor:pointer;position:relative;transition:box-shadow .2s;}
+.domain-tile:active{box-shadow:0 2px 12px rgba(0,0,0,.1);}
+.tile-health{border-top-color:var(--blush);}
+.tile-career{border-top-color:var(--gold);}
+.tile-leisure{border-top-color:var(--sage);}
+.tile-home{border-top-color:#5a7a8c;}
+.tile-icon{font-size:20px;margin-bottom:8px;}
+.tile-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin-bottom:4px;}
+.tile-active{font-size:12px;color:var(--ink);line-height:1.3;}
+.tile-arrow{position:absolute;bottom:12px;right:14px;color:var(--text2);font-size:11px;}
+.reflection-wrap{padding:22px 20px 36px;border-top:1px solid var(--border);}
+.reflect-q{font-size:13px;font-style:italic;color:var(--text);margin-bottom:8px;margin-top:16px;}
+.reflect-q:first-child{margin-top:0;}
+.reflect-input{background:var(--surface);border:1px solid var(--border);padding:10px 14px;color:var(--ink);font-family:'Jost',sans-serif;font-size:13px;font-weight:300;width:100%;resize:none;min-height:50px;transition:border-color .2s;display:block;}
+.reflect-input:focus{outline:none;border-color:var(--gold);}
+.reflect-input::placeholder{color:var(--text2);font-style:italic;}
+.btn-primary{all:unset;cursor:pointer;background:var(--ink);color:var(--bg);padding:14px 24px;font-size:11px;letter-spacing:.25em;text-transform:uppercase;text-align:center;width:100%;display:block;margin-top:16px;}
+.btn-primary:active{background:var(--ink2);}
+.domain-header{padding:28px 20px 22px;border-bottom:1px solid var(--border);text-align:center;}
+.domain-icon-lg{font-size:28px;margin-bottom:10px;}
+.domain-title{font-family:'Tenor Sans',serif;font-size:30px;color:var(--ink);margin-bottom:4px;}
+.domain-subtitle{font-size:13px;font-style:italic;color:var(--text);}
+.phase-strip{padding:14px 20px;background:var(--gold-bg);border-bottom:1px solid var(--border);}
+.phase-now{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:3px;}
+.phase-name{font-size:15px;color:var(--ink);}
+.pillar-list{padding:14px 20px;display:flex;flex-direction:column;gap:10px;}
+.pillar-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border2);padding:16px;}
+.pillar-card.active-focus{border-left-color:var(--gold);}
+.pillar-card.active-focus .pillar-status{color:var(--gold);}
+.pillar-card.also-active{border-left-color:var(--blush);}
+.pillar-card.also-active .pillar-status{color:var(--blush);}
+.pillar-card.building{border-left-color:var(--sage);}
+.pillar-card.building .pillar-status{color:var(--sage);}
+.pillar-card.queued{opacity:.45;}
+.pillar-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;}
+.pillar-name{font-size:15px;color:var(--ink);font-weight:400;flex:1;}
+.pillar-status{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);flex-shrink:0;margin-top:2px;}
+.pillar-desc{font-size:12px;color:var(--text);line-height:1.6;font-style:italic;margin-bottom:10px;}
+.progress-track{background:var(--border);height:2px;}
+.progress-fill{height:100%;background:var(--gold);transition:width .4s;}
+.progress-label{font-size:9px;color:var(--text2);margin-top:4px;}
+.sub-items{display:flex;flex-direction:column;gap:6px;margin-top:12px;}
+.sub-item{background:var(--surface2);border:1px solid var(--border);padding:12px 14px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
+.sub-check{width:18px;height:18px;border:1px solid var(--border2);border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .2s;}
+.sub-check.done{background:var(--gold);border-color:var(--gold);}
+.sub-check.done::after{content:'✓';font-size:10px;color:white;}
+.sub-text{flex:1;}
+.sub-name{font-size:13px;color:var(--ink);margin-bottom:2px;}
+.sub-detail{font-size:11px;color:var(--text2);font-style:italic;}
+.history-section{margin-top:14px;border-top:1px solid var(--border);padding-top:12px;}
+.history-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;}
+.history-entries{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;margin-bottom:8px;}
+.history-entry{background:var(--surface2);border:1px solid var(--border);padding:10px 12px;display:flex;gap:10px;align-items:flex-start;}
+.history-date{font-size:9px;color:var(--text2);min-width:68px;margin-top:1px;}
+.history-text{font-size:12px;color:var(--ink);line-height:1.5;flex:1;}
+.history-del{font-size:13px;color:var(--border2);cursor:pointer;flex-shrink:0;}
+.history-del:hover{color:var(--blush);}
+.history-add-row{display:flex;gap:8px;}
+.history-input{flex:1;background:var(--surface);border:1px solid var(--border);padding:9px 12px;color:var(--ink);font-family:'Jost',sans-serif;font-size:12px;font-weight:300;}
+.history-input:focus{outline:none;border-color:var(--gold);}
+.history-input::placeholder{color:var(--text2);font-style:italic;}
+.history-btn{all:unset;cursor:pointer;background:var(--gold);color:white;padding:9px 14px;font-size:11px;flex-shrink:0;}
+.cessation-card{background:var(--blush-bg);border:1px solid #e8c0b0;padding:22px 20px;margin:14px 20px 0;text-align:center;}
+.cessation-title{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--blush);margin-bottom:14px;}
+.cessation-display{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:4px;}
+.cessation-hours{font-family:'Tenor Sans',serif;font-size:64px;color:var(--ink);line-height:1;}
+.cessation-unit{font-size:14px;color:var(--text);letter-spacing:.1em;text-transform:uppercase;}
+.cessation-mins{font-family:'Tenor Sans',serif;font-size:28px;color:var(--text);margin-top:4px;}
+.cessation-sub{font-size:12px;color:var(--text);margin-top:6px;font-style:italic;}
+.cessation-actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+.cessation-btn{all:unset;cursor:pointer;padding:9px 18px;background:var(--blush);color:white;font-size:10px;letter-spacing:.2em;text-transform:uppercase;}
+.cessation-log-btn{all:unset;cursor:pointer;padding:9px 14px;border:1px solid var(--blush);color:var(--blush);font-size:10px;letter-spacing:.15em;text-transform:uppercase;}
+.comp-card{background:var(--surface);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px;}
+.comp-specialty{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
+.comp-topic{font-size:14px;color:var(--ink);margin-bottom:6px;}
+.comp-sub{font-size:11px;color:var(--text);margin-bottom:8px;font-style:italic;}
+.comp-bar-wrap{background:var(--border);height:2px;}
+.comp-bar{height:100%;background:var(--gold);}
+.comp-meta{font-size:10px;color:var(--text2);margin-top:4px;display:flex;justify-content:space-between;}
+.re-stage{background:var(--surface);border:1px solid var(--border);padding:16px;margin-bottom:8px;}
+.re-stage-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+.re-stage-name{font-size:15px;color:var(--ink);margin-bottom:10px;}
+.season-tabs{display:flex;margin:0 20px 14px;border:1px solid var(--border);}
+.season-tab{flex:1;padding:10px 4px;text-align:center;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text2);cursor:pointer;border-right:1px solid var(--border);transition:all .2s;}
+.season-tab:last-child{border-right:none;}
+.season-tab.active{background:var(--gold-bg);color:var(--gold);}
+.check-cat{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin:16px 20px 8px;}
+.checklist{padding:0 20px;display:flex;flex-direction:column;gap:6px;margin-bottom:4px;}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);cursor:pointer;}
+.check-box{width:20px;height:20px;border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:1px;}
+.check-box.done{background:var(--sage);border-color:var(--sage);}
+.check-box.done::after{content:'✓';font-size:11px;color:white;}
+.check-body{flex:1;}
+.check-name{font-size:13px;color:var(--ink);margin-bottom:2px;}
+.check-sub{font-size:11px;color:var(--text2);font-style:italic;}
+.info-note{margin:0 20px 14px;padding:12px 14px;background:var(--gold-bg);border-left:2px solid var(--gold-light);font-size:12px;color:var(--ink2);font-style:italic;line-height:1.6;}
+.pad-h{padding:0 20px;}
+.redesign-section{padding:0 20px 20px;}
+.redesign-item{background:var(--surface);border:1px solid var(--border);padding:14px;margin-bottom:6px;}
+.redesign-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.redesign-name{font-size:14px;color:var(--ink);}
+.redesign-toggle{font-size:11px;color:var(--text2);}
+.redesign-detail{display:none;margin-top:10px;}
+.redesign-detail textarea{width:100%;background:var(--surface2);border:1px solid var(--border);padding:8px 10px;color:var(--ink);font-family:'Jost',sans-serif;font-size:12px;font-weight:300;resize:none;min-height:56px;}
+.redesign-detail textarea:focus{outline:none;border-color:var(--gold);}
+.redesign-detail textarea::placeholder{color:var(--text2);font-style:italic;}
+.reset-overlay{display:none;position:fixed;inset:0;background:rgba(26,23,18,.97);z-index:100;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;overflow-y:auto;}
+.reset-overlay.active{display:flex;}
+.reset-headline{font-family:'Tenor Sans',serif;font-size:34px;color:#f0e8d8;margin-bottom:6px;}
+.reset-headline em{color:#c47a6a;font-style:italic;}
+.reset-phrase{font-size:15px;font-style:italic;color:#c8a96e;margin:20px 0;padding:18px;border:1px solid #3a342e;line-height:1.7;max-width:360px;}
+.reset-steps-list{text-align:left;width:100%;max-width:360px;margin-bottom:28px;}
+.r-step{display:flex;gap:14px;padding:11px 0;border-bottom:1px solid #2a2520;}
+.r-step:last-child{border:none;}
+.r-num{font-size:10px;letter-spacing:.2em;color:#c47a6a;min-width:20px;margin-top:2px;}
+.r-text{font-size:13px;color:#a09080;line-height:1.5;}
+.r-text strong{color:#f0e8d8;font-weight:400;}
+.close-reset{all:unset;cursor:pointer;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#6a5e50;padding:12px;}
+.fab{position:fixed;bottom:22px;right:20px;background:var(--blush);color:white;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;z-index:50;box-shadow:0 4px 18px rgba(160,72,48,.25);transition:transform .2s;}
+.fab:active{transform:scale(.93);}
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 20px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="reset-overlay" id="resetOverlay">
+  <div class="reset-headline">Come <em>Back.</em></div>
+  <div style="font-size:10px;color:#6a5e50;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px;">You felt the shift. That's the awareness.</div>
+  <div class="reset-phrase">"I do not need to react<br>to remain powerful."</div>
+  <div class="reset-steps-list">
+    <div class="r-step"><div class="r-num">01</div><div class="r-text"><strong>Stop. Breathe.</strong> Three slow breaths. No reaction required.</div></div>
+    <div class="r-step"><div class="r-num">02</div><div class="r-text"><strong>Name it.</strong> Fear? Anger? Need to explain? Name it — don't judge it.</div></div>
+    <div class="r-step"><div class="r-num">03</div><div class="r-text"><strong>Remember:</strong> They can only express their own internal state. You don't absorb it.</div></div>
+    <div class="r-step"><div class="r-num">04</div><div class="r-text"><strong>Ask:</strong> What is the next competent action?</div></div>
+    <div class="r-step"><div class="r-num">05</div><div class="r-text"><strong>Return.</strong> Calm. Competent. Planted. One move.</div></div>
+  </div>
+  <button class="close-reset" onclick="closeReset()">← Return to OS</button>
+</div>
+
+<div class="fab" onclick="openReset()">↺</div>
+
+<!-- HOME -->
+<div class="screen active" id="home">
+  <div class="home-hero">
+    <div style="display:flex;justify-content:center;margin-bottom:16px;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="72" height="72" style="border-radius:18px;">
+        <rect width="120" height="120" rx="24" fill="#1a1712"/>
+        <path d="M28 24h28c12 0 22 8 22 20s-6 15-14 17c9 2 16 9 16 20s-10 21-24 21H28zM44 53h10c6 0 10-4 10-10s-4-9-10-9H44zm0 42h12c7 0 12-5 12-11s-5-11-12-11H44z" fill="#c8a96e"/>
+        <ellipse cx="91" cy="30" rx="15" ry="9" fill="#c47a6a" opacity=".92" transform="rotate(-35 91 30)"/>
+        <ellipse cx="95" cy="50" rx="11" ry="7" fill="#c47a6a" opacity=".72" transform="rotate(25 95 50)"/>
+        <ellipse cx="89" cy="28" rx="6" ry="3" fill="#f0d8c0" opacity=".25" transform="rotate(-35 89 28)"/>
+        <line x1="88" y1="28" x2="88" y2="54" stroke="#1a1712" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M88 28 Q83 20 80 15" stroke="#c8a96e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M88 28 Q93 20 96 15" stroke="#c8a96e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="80" cy="15" r="2" fill="#c8a96e"/>
+        <circle cx="96" cy="15" r="2" fill="#c8a96e"/>
+        <circle cx="88" cy="30" r="1.5" fill="#f5f1eb"/>
+      </svg>
+    </div>
+    <div class="greeting">Becoming Operating System</div>
+    <div class="home-name"><em>Becoming.</em></div>
+    <div class="pillars-row">
+      <span class="pillar-tag">Grounded</span><span class="pillar-tag">Aligned</span><span class="pillar-tag">Healthy</span><span class="pillar-tag">Wealthy</span><span class="pillar-tag">Connected</span>
+    </div>
+    <div class="meta-row">
+      <div class="home-date" id="homeDate"></div>
+      <div class="streak-pill">🔥 <span id="streakCount">0</span> day streak</div>
+    </div>
+  </div>
+  <div class="scroll-content">
+    <div class="section-pad">
+      <div class="section-label">Morning — Three Gratitudes</div>
+      <input class="g-input" placeholder="I'm grateful for..." />
+      <input class="g-input" placeholder="I'm grateful for..." />
+      <input class="g-input" placeholder="I'm grateful for..." />
+    </div>
+    <div class="section-pad" style="padding-top:0">
+      <div class="section-label">Today's Three Priorities</div>
+      <div class="priority-row"><span class="priority-num">01</span><input class="g-input" placeholder="Most important thing today..." style="margin:0;flex:1;" /></div>
+      <div class="priority-row" style="margin-top:8px;"><span class="priority-num">02</span><input class="g-input" placeholder="Second priority..." style="margin:0;flex:1;" /></div>
+      <div class="priority-row" style="margin-top:8px;"><span class="priority-num">03</span><input class="g-input" placeholder="Third priority..." style="margin:0;flex:1;" /></div>
+    </div>
+    <div class="section-pad" style="padding-top:0">
+      <div class="section-label">Daily Metrics</div>
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-name">Focus</div><input type="range" min="1" max="10" value="5" class="metric-slider" oninput="this.nextElementSibling.textContent=this.value"><div class="metric-val">5</div></div>
+        <div class="metric-card"><div class="metric-name">Emotional Control</div><input type="range" min="1" max="10" value="5" class="metric-slider" oninput="this.nextElementSibling.textContent=this.value"><div class="metric-val">5</div></div>
+        <div class="metric-card"><div class="metric-name">Discipline</div><input type="range" min="1" max="10" value="5" class="metric-slider" oninput="this.nextElementSibling.textContent=this.value"><div class="metric-val">5</div></div>
+        <div class="metric-card"><div class="metric-name">Alignment</div><input type="range" min="1" max="10" value="5" class="metric-slider" oninput="this.nextElementSibling.textContent=this.value"><div class="metric-val">5</div></div>
+        <div class="metric-card"><div class="metric-name">Energy</div><input type="range" min="1" max="10" value="5" class="metric-slider" oninput="this.nextElementSibling.textContent=this.value"><div class="metric-val">5</div></div>
+        <div class="metric-card"><div class="metric-name">Mission Progress</div><input type="range" min="1" max="10" value="5" class="metric-slider" oninput="this.nextElementSibling.textContent=this.value"><div class="metric-val">5</div></div>
+      </div>
+    </div>
+    <div class="section-pad" style="padding-top:0;padding-bottom:8px;"><div class="section-label">Your Domains</div></div>
+    <div class="domain-grid">
+      <div class="domain-tile tile-health" onclick="show('health')"><div class="tile-icon">🌿</div><div class="tile-label">Health</div><div class="tile-active">Sovereignty + cessation + appearance</div><div class="tile-arrow">→</div></div>
+      <div class="domain-tile tile-career" onclick="show('career')"><div class="tile-icon">⚡</div><div class="tile-label">Career</div><div class="tile-active">Neuro ICU + Real estate</div><div class="tile-arrow">→</div></div>
+      <div class="domain-tile tile-leisure" onclick="show('leisure')"><div class="tile-icon">🌊</div><div class="tile-label">Leisure</div><div class="tile-active">Swimming season active</div><div class="tile-arrow">→</div></div>
+      <div class="domain-tile tile-home" onclick="show('homefamily')"><div class="tile-icon">🏠</div><div class="tile-label">Home & Family</div><div class="tile-active">Daily systems + kids</div><div class="tile-arrow">→</div></div>
+    </div>
+    <div class="reflection-wrap">
+      <div class="section-label">Nightly Reflection</div>
+      <div class="reflect-q">Where was I aligned today?</div>
+      <textarea class="reflect-input" placeholder="I held my ground when..." rows="2"></textarea>
+      <div class="reflect-q">Where did I leak energy?</div>
+      <textarea class="reflect-input" placeholder="I drifted when..." rows="2"></textarea>
+      <div class="reflect-q">What triggered me?</div>
+      <textarea class="reflect-input" placeholder="Name it without judgment..." rows="2"></textarea>
+      <div class="reflect-q">What would my highest self do tomorrow?</div>
+      <textarea class="reflect-input" placeholder="Tomorrow I will..." rows="2"></textarea>
+      <button class="btn-primary" onclick="saveDay()">Lock In Today ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEALTH -->
+<div class="screen" id="health">
+  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Health</span><span></span></div>
+  <div class="scroll-content">
+    <div class="domain-header"><div class="domain-icon-lg">🌿</div><div class="domain-title">Health</div><div class="domain-subtitle">The first domain you lead.</div></div>
+    <div class="cessation-card">
+      <div class="cessation-title">Smoke-Free Clock</div>
+      <div class="cessation-display">
+        <span class="cessation-hours" id="cessHours">0</span>
+        <span class="cessation-unit">hr</span>
+        <span class="cessation-mins" id="cessMins">:00</span>
+      </div>
+      <div class="cessation-sub" id="cessationSub">Start your clock — every hour counts</div>
+      <div style="margin-top:10px;">
+        <div class="progress-track"><div class="progress-fill" id="cessProgress" style="width:0%"></div></div>
+        <div style="font-size:9px;color:var(--text2);margin-top:4px;text-align:center;letter-spacing:.08em;" id="cessGoal">Goal: 72 hours → 1 week → 1 month</div>
+      </div>
+      <div class="cessation-actions">
+        <button class="cessation-btn" onclick="startCessation()">Start / Reset Clock</button>
+        <button class="cessation-log-btn" onclick="logCig()">Had one — log it</button>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text);font-style:italic;text-align:center;">Urge = drift signal. Name it. Reset. Redirect.</div>
+    </div>
+    <div class="pillar-list">
+      <div class="pillar-card active-focus">
+        <div class="pillar-header"><span class="pillar-name">A. Emotional Sovereignty</span><span class="pillar-status">Active</span></div>
+        <div class="pillar-desc">Identity installation, frequency management, drift detection. Morning OS before any screen, every day.</div>
+        <div class="progress-track"><div class="progress-fill" style="width:30%"></div></div>
+        <div class="progress-label">Month 1 — building the nervous system</div>
+        <div class="sub-items">
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Morning OS completed</div><div class="sub-detail">Before any screen, texts, or social media</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Frequency management</div><div class="sub-detail">Stayed in my frequency — didn't absorb theirs</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Drift detection active</div><div class="sub-detail">Noticed when I shifted — named it, returned</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Affirmations read slowly</div><div class="sub-detail">Like facts, not hype</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Spoke less, with more weight</div><div class="sub-detail">Didn't fill silence — let competence show</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Visualization done</div><div class="sub-detail">Calm under pressure, grounded during rounds</div></div></div>
+        </div>
+        <div class="history-section">
+          <div class="history-label">Progress Log</div>
+          <div class="history-entries" id="log-sovereignty"></div>
+          <div class="history-add-row"><input class="history-input" id="in-sovereignty" placeholder="What shifted, what held, what I noticed..."/><button class="history-btn" onclick="addLog('sovereignty')">+ Add</button></div>
+        </div>
+      </div>
+      <div class="pillar-card also-active">
+        <div class="pillar-header"><span class="pillar-name">B. Smoking Cessation</span><span class="pillar-status">Active</span></div>
+        <div class="pillar-desc">Same nervous system. Urge = drift signal. Identify the trigger, run the reset, replace the behavior.</div>
+        <div class="sub-items">
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Logged urge + trigger</div><div class="sub-detail">What caused it? Stress, boredom, after a shift?</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Read or listened to cessation content</div><div class="sub-detail">Book, article, podcast — feed the new identity</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Replaced with alternative behavior</div><div class="sub-detail">Walk, water, breath work — anything but the cigarette</div></div></div>
+        </div>
+        <div class="history-section">
+          <div class="history-label">Cessation Log</div>
+          <div class="history-entries" id="log-cessation"></div>
+          <div class="history-add-row"><input class="history-input" id="in-cessation" placeholder="Trigger was stress after rounds — walked instead..."/><button class="history-btn" onclick="addLog('cessation')">+ Add</button></div>
+        </div>
+      </div>
+      <div class="pillar-card building">
+        <div class="pillar-header"><span class="pillar-name">C. Diet & Exercise</span><span class="pillar-status">Building</span></div>
+        <div class="pillar-desc">20–45 min movement minimum. Sleep protected. Reduce emotional eating. Consistency beats intensity.</div>
+        <div class="sub-items">
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Movement today</div><div class="sub-detail">20+ min — walking counts</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Protected sleep</div><div class="sub-detail">In bed by your target time</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional nutrition</div><div class="sub-detail">No chaotic eating today</div></div></div>
+        </div>
+        <div class="history-section">
+          <div class="history-label">Body Progress Log</div>
+          <div class="history-entries" id="log-diet"></div>
+          <div class="history-add-row"><input class="history-input" id="in-diet" placeholder="Walked 30 min, skipped emotional snacking..."/><button class="history-btn" onclick="addLog('diet')">+ Add</button></div>
+        </div>
+      </div>
+      <div class="pillar-card building">
+        <div class="pillar-header"><span class="pillar-name">D. Appearance</span><span class="pillar-status">Active</span></div>
+        <div class="pillar-desc">Soft, classy, glam. Building the full version of yourself daily — not waiting until everything is perfect.</div>
+        <div class="sub-items">
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Hair maintained</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional outfit</div><div class="sub-detail">Dressed how you want to feel, not how you feel right now</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Makeup / grooming done</div><div class="sub-detail">Glam is self-respect made visible</div></div></div>
+        </div>
+        <div class="history-section">
+          <div class="history-label">Appearance Log</div>
+          <div class="history-entries" id="log-appearance"></div>
+          <div class="history-add-row"><input class="history-input" id="in-appearance" placeholder="Got hair done, felt myself today..."/><button class="history-btn" onclick="addLog('appearance')">+ Add</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAREER -->
+<div class="screen" id="career">
+  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Career</span><span></span></div>
+  <div class="scroll-content">
+    <div class="domain-header"><div class="domain-icon-lg">⚡</div><div class="domain-title">Career</div><div class="domain-subtitle">Knowledge is potential. Application is power.</div></div>
+    <div class="season-tabs" style="margin-top:16px;">
+      <div class="season-tab active" onclick="careerTab('neuro',this)">Neuro ICU</div>
+      <div class="season-tab" onclick="careerTab('re',this)">Real Estate</div>
+    </div>
+    <div id="c-neuro">
+      <div class="phase-strip"><div class="phase-now">Currently Active</div><div class="phase-name">Neuro RN & NP Competency</div></div>
+      <div class="info-note" style="margin-top:14px;">Two months in. Still standing. One topic per week, deeper than surface. Build the evidence that silences the inner critic.</div>
+      <div class="pad-h">
+        <div class="comp-card" style="border-left:3px solid var(--gold);">
+          <div style="display:flex;justify-content:space-between;"><div class="comp-specialty">Phase 1 — Active</div><span style="font-size:9px;color:var(--gold);">CURRENT</span></div>
+          <div class="comp-topic">Neuro RN & NP</div>
+          <div class="comp-sub">Stroke · Hemorrhage · Seizure · ICP management</div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:35%"></div></div>
+          <div class="comp-meta"><span>Foundation building</span><span>35%</span></div>
+          <div class="history-section">
+            <div class="history-label">Progress & Notes</div>
+            <div class="history-entries" id="log-neuro"></div>
+            <div class="history-add-row"><input class="history-input" id="in-neuro" placeholder="Covered ICP management, reviewed EVD protocol..."/><button class="history-btn" onclick="addLog('neuro')">+ Add</button></div>
+          </div>
+        </div>
+        <div class="comp-card" style="border-left:3px solid var(--gold-light);">
+          <div class="comp-specialty" style="margin-bottom:8px;">Case Library & Education System</div>
+          <div class="sub-items" style="margin-top:0;">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Case library — reviewed a case today</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Guideline / protocol reviewed</div><div class="sub-detail">Stroke, hemorrhage, seizure, ICP — rotate weekly</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Deep work block done</div><div class="sub-detail">45–90 min, phone away, one target only</div></div></div>
+          </div>
+          <div class="history-section">
+            <div class="history-label">Case Library Log</div>
+            <div class="history-entries" id="log-cases"></div>
+            <div class="history-add-row"><input class="history-input" id="in-cases" placeholder="Completed subarachnoid hemorrhage case module..."/><button class="history-btn" onclick="addLog('cases')">+ Add</button></div>
+          </div>
+        </div>
+        <div class="comp-card" style="opacity:.6;"><div class="comp-specialty">Phase 2 — Queued</div><div class="comp-topic">Pulmonary RN & NP</div><div class="comp-bar-wrap"><div class="comp-bar" style="width:0%"></div></div><div class="comp-meta"><span>After neuro foundation set</span><span>—</span></div></div>
+        <div class="comp-card" style="opacity:.4;"><div class="comp-specialty">Phase 3 — Future</div><div class="comp-topic">Cardiac RN & NP</div><div class="comp-bar-wrap"><div class="comp-bar" style="width:0%"></div></div><div class="comp-meta"><span>Queued</span><span>—</span></div></div>
+        <div class="comp-card" style="opacity:.3;"><div class="comp-specialty">Phase 4 — Future</div><div class="comp-topic">Renal / Endocrine</div><div class="comp-bar-wrap"><div class="comp-bar" style="width:0%"></div></div><div class="comp-meta"><span>Queued</span><span>—</span></div></div>
+      </div>
+      <div style="padding:14px 20px 4px;"><div class="section-label">This Week — ICU</div></div>
+      <div class="pad-h">
+        <div class="sub-items" style="padding:0;">
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Pre-shift 2-min activation</div><div class="sub-detail">Planted before entering — not reactive</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Incident log if needed</div><div class="sub-detail">Date · what was said · who witnessed</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="c-re" style="display:none;">
+      <div class="phase-strip"><div class="phase-now">Current Assets</div><div class="phase-name">Duplex + Midterm Rental Active</div></div>
+      <div class="info-note" style="margin-top:14px;">Two properties, Pace Morby full library, Credit Suite. Bandwidth is the bottleneck — not knowledge. Log every small action. It compounds.</div>
+      <div class="pad-h" style="margin-top:14px;">
+        <div class="re-stage">
+          <div class="re-stage-label">Active — Portfolio</div>
+          <div class="re-stage-name">Property Management</div>
+          <div class="sub-items" style="margin-top:0;">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Duplex — tenant / maintenance action</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Midterm rental — pricing / occupancy checked</div></div></div>
+          </div>
+          <div class="history-section">
+            <div class="history-label">Activity Log</div>
+            <div class="history-entries" id="log-pm"></div>
+            <div class="history-add-row"><input class="history-input" id="in-pm" placeholder="Tenant confirmed new payment system..."/><button class="history-btn" onclick="addLog('pm')">+ Add</button></div>
+          </div>
+        </div>
+        <div class="re-stage">
+          <div class="re-stage-label">Resolving</div>
+          <div class="re-stage-name">Credit Suite</div>
+          <div class="sub-items" style="margin-top:0;"><div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">One action toward resolution today</div></div></div></div>
+          <div class="history-section">
+            <div class="history-label">Credit Suite Log</div>
+            <div class="history-entries" id="log-credit"></div>
+            <div class="history-add-row"><input class="history-input" id="in-credit" placeholder="Called support, escalated dispute..."/><button class="history-btn" onclick="addLog('credit')">+ Add</button></div>
+          </div>
+        </div>
+        <div class="re-stage" style="opacity:.75;">
+          <div class="re-stage-label">Building</div>
+          <div class="re-stage-name">Trust / LLC + Pace Morby</div>
+          <div class="sub-items" style="margin-top:0;"><div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">One Pace Morby module today</div><div class="sub-detail">15–20 min. One concept. Done.</div></div></div></div>
+          <div class="history-section">
+            <div class="history-label">Learning Log</div>
+            <div class="history-entries" id="log-pace"></div>
+            <div class="history-add-row"><input class="history-input" id="in-pace" placeholder="Covered land trust setup module..."/><button class="history-btn" onclick="addLog('pace')">+ Add</button></div>
+          </div>
+        </div>
+        <div class="re-stage" style="opacity:.5;"><div class="re-stage-label">Queued</div><div class="re-stage-name">Next Acquisition + Automation</div><div style="font-size:12px;color:var(--text);font-style:italic;margin-top:4px;">Define deal #3 criteria · Acquisitions workflow · Systems automation</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEISURE -->
+<div class="screen" id="leisure">
+  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Leisure</span><span></span></div>
+  <div class="scroll-content">
+    <div class="domain-header"><div class="domain-icon-lg">🌊</div><div class="domain-title">Leisure</div><div class="domain-subtitle">Seasonal, intentional, yours.</div></div>
+    <div class="season-tabs" style="margin-top:16px;">
+      <div class="season-tab active" onclick="leisureTab('now',this)">Now</div>
+      <div class="season-tab" onclick="leisureTab('next',this)">Next</div>
+      <div class="season-tab" onclick="leisureTab('all',this)">All</div>
+    </div>
+    <div id="l-now">
+      <div class="phase-strip"><div class="phase-now">Summer — Active</div><div class="phase-name">Swimming</div></div>
+      <div class="info-note" style="margin-top:14px;">Hot season = swim season. Schedule the day, not just the intention.</div>
+      <div class="pad-h"><div class="sub-items" style="padding:0;">
+        <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research pools / locations nearby</div></div></div>
+        <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find out cost / membership options</div></div></div>
+        <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Apply / sign up / schedule first session</div></div></div>
+        <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Swam this week ✓</div></div></div>
+      </div></div>
+    </div>
+    <div id="l-next" style="display:none;">
+      <div class="pillar-list">
+        <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">✈️ Travel</span><span class="pillar-status">Planning</span></div><div class="pillar-desc">One trip. Build toward it as a reward for consistent execution.</div></div>
+        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🗣 Speaking Clearly</span><span class="pillar-status">Queued</span></div><div class="pillar-desc">Accent refinement. Can start anytime.</div></div>
+        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🇪🇸 Spanish</span><span class="pillar-status">Queued</span></div><div class="pillar-desc">10 min daily. Stack onto a morning habit.</div></div>
+      </div>
+    </div>
+    <div id="l-all" style="display:none;">
+      <div class="pillar-list">
+        <div class="pillar-card active-focus"><div class="pillar-header"><span class="pillar-name">🌊 Swimming</span><span class="pillar-status">Active</span></div></div>
+        <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">✈️ Travel</span><span class="pillar-status">Planning</span></div></div>
+        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🗣 Speaking Clearly</span><span class="pillar-status">Queued</span></div></div>
+        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🌱 Growing Plants</span><span class="pillar-status">Queued — Cooler Months</span></div></div>
+        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🇪🇸 Spanish</span><span class="pillar-status">Queued</span></div></div>
+        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🧵 Sewing</span><span class="pillar-status">Queued</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME & FAMILY -->
+<div class="screen" id="homefamily">
+  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Home & Family</span><span></span></div>
+  <div class="scroll-content">
+    <div class="domain-header"><div class="domain-icon-lg">🏠</div><div class="domain-title">Home &<br>Family</div><div class="domain-subtitle">Maintain the environment. Protect the foundation.</div></div>
+    <div class="season-tabs" style="margin-top:16px;">
+      <div class="season-tab active" onclick="homeTab('home',this)">Home</div>
+      <div class="season-tab" onclick="homeTab('kids',this)">Kids</div>
+      <div class="season-tab" onclick="homeTab('adult',this)">Daughter</div>
+    </div>
+    <div id="h-home">
+      <div class="check-cat">Daily</div>
+      <div class="checklist">
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Clean</div><div class="check-sub">Surfaces, dishes, visible order</div></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Maintain</div><div class="check-sub">Nothing piles up today</div></div></div>
+      </div>
+      <div class="check-cat">Weekly</div>
+      <div class="checklist">
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Deep clean one area</div><div class="check-sub">Kitchen → bathroom → bedroom → living room</div></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Organize one space</div><div class="check-sub">10 min minimum</div></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Car cleaned</div><div class="check-sub">Your car is an extension of your environment</div></div></div>
+      </div>
+      <div class="check-cat">Home Redesign — In Progress</div>
+      <div class="redesign-section">
+        <div class="redesign-item"><div class="redesign-header" onclick="toggleRedesign(this)"><span class="redesign-name">🌿 Backyard — Shed Space</span><span class="redesign-toggle">+ expand</span></div><div class="redesign-detail"><textarea placeholder="Clear shed, measure space, research pergola options..."></textarea></div></div>
+        <div class="redesign-item"><div class="redesign-header" onclick="toggleRedesign(this)"><span class="redesign-name">🛋 Interior Design</span><span class="redesign-toggle">+ expand</span></div><div class="redesign-detail"><textarea placeholder="Vision, inspo, rooms, vibe..."></textarea></div></div>
+        <div class="redesign-item"><div class="redesign-header" onclick="toggleRedesign(this)"><span class="redesign-name">➕ Add another project</span><span class="redesign-toggle">+ expand</span></div><div class="redesign-detail"><textarea placeholder="Name the project and first steps..."></textarea></div></div>
+      </div>
+    </div>
+    <div id="h-kids" style="display:none;">
+      <div class="info-note" style="margin-top:14px;">1-year-old and 4-year-old. Your calm is their safety.</div>
+      <div class="check-cat">1-Year-Old</div>
+      <div class="checklist"><div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Quality connection time</div><div class="check-sub">20 min focused presence — floor time, reading, play</div></div></div></div>
+      <div class="check-cat">4-Year-Old</div>
+      <div class="checklist">
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Learning activity</div><div class="check-sub">Letters, numbers, stories, curiosity-led play</div></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Structure maintained</div><div class="check-sub">Meals, routine — consistency is safety</div></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Outside time</div></div></div>
+      </div>
+      <div class="check-cat">Family</div>
+      <div class="checklist">
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Monthly family event planned</div></div></div>
+        <div class="check-item" style="opacity:.5;"><div class="check-box"></div><div class="check-body"><div class="check-name">Family travel</div><div class="check-sub">Future phase</div></div></div>
+      </div>
+    </div>
+    <div id="h-adult" style="display:none;">
+      <div class="info-note" style="margin-top:14px;">Protect your household and your sovereignty. You cannot want it more than she does.</div>
+      <div class="check-cat">Household Accountability</div>
+      <div class="checklist">
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">She contributed today</div><div class="check-sub">Child care, household task, or step toward employment</div></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Boundary held without drama</div></div></div>
+      </div>
+      <div class="check-cat">Her Development</div>
+      <div class="checklist">
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">Forward motion this week</div><div class="check-sub">Job applied, program researched — any step</div></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-body"><div class="check-name">One career conversation</div><div class="check-sub">A plan, not a lecture</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function updateDate(){var d=new Date();var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];var months=['January','February','March','April','May','June','July','August','September','October','November','December'];var el=document.getElementById('homeDate');if(el)el.textContent=days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate();}
+function toggleCheck(item){var b=item.querySelector('.sub-check,.check-box');if(b)b.classList.toggle('done');}
+function toggleRedesign(header){var d=header.parentElement.querySelector('.redesign-detail');var t=header.querySelector('.redesign-toggle');var open=d.style.display==='block';d.style.display=open?'none':'block';t.textContent=open?'+ expand':'− close';}
+function openReset(){document.getElementById('resetOverlay').classList.add('active');}
+function closeReset(){document.getElementById('resetOverlay').classList.remove('active');}
+var cessStart=null;
+try{var cs=localStorage.getItem('cessStart');if(cs)cessStart=new Date(cs);}catch(e){}
+function updateCessation(){
+  var hEl=document.getElementById('cessHours');var mEl=document.getElementById('cessMins');
+  var sub=document.getElementById('cessationSub');var prog=document.getElementById('cessProgress');var goal=document.getElementById('cessGoal');
+  if(!hEl)return;
+  if(!cessStart){hEl.textContent='0';mEl.textContent=':00';return;}
+  var diff=new Date()-cessStart;
+  var totalMins=Math.floor(diff/60000);
+  var hrs=Math.floor(totalMins/60);var mins=totalMins%60;
+  hEl.textContent=hrs;mEl.textContent=':'+(mins<10?'0':'')+mins;
+  if(sub){if(hrs<1)sub.textContent=mins+' minute'+(mins===1?'':'s')+' smoke-free 🔥';else if(hrs<24)sub.textContent=hrs+' hour'+(hrs===1?'':'s')+' smoke-free 🔥';else{var days=Math.floor(hrs/24);sub.textContent=days+' day'+(days===1?'':'s')+' smoke-free 🔥';}}
+  var pct=Math.min(100,Math.round((hrs/72)*100));if(prog)prog.style.width=pct+'%';
+  if(goal){if(hrs<72)goal.textContent='Next milestone: 72 hours ('+(72-hrs)+' hrs to go)';else if(hrs<168)goal.textContent='Next milestone: 1 week ('+(168-hrs)+' hrs to go)';else if(hrs<720)goal.textContent='Next milestone: 1 month — keep going 🔥';else goal.textContent='One month smoke-free. 🏆';}
+}
+function startCessation(){if(confirm('Start your smoke-free clock from right now?')){cessStart=new Date();try{localStorage.setItem('cessStart',cessStart.toISOString());}catch(e){}updateCessation();}}
+function logCig(){if(confirm('Logging one — no shame. Name the trigger, use the reset next time. Restart the clock from now?')){cessStart=new Date();try{localStorage.setItem('cessStart',cessStart.toISOString());}catch(e){}updateCessation();}}
+function getLogs(key){try{return JSON.parse(localStorage.getItem('log_'+key)||'[]');}catch(e){return[];}}
+function saveLogs(key,logs){try{localStorage.setItem('log_'+key,JSON.stringify(logs));}catch(e){}}
+function renderLogs(key){
+  var container=document.getElementById('log-'+key);if(!container)return;
+  var logs=getLogs(key);
+  if(logs.length===0){container.innerHTML='<div style="font-size:11px;color:var(--text2);font-style:italic;padding:6px 0;">No entries yet</div>';return;}
+  container.innerHTML=logs.map(function(l,i){return'<div class="history-entry"><span class="history-date">'+l.date+'</span><span class="history-text">'+l.text+'</span><span class="history-del" onclick="deleteLog(\''+key+'\','+i+')">×</span></div>';}).join('');
+  container.scrollTop=container.scrollHeight;
+}
+function addLog(key){
+  var input=document.getElementById('in-'+key);if(!input||!input.value.trim())return;
+  var logs=getLogs(key);var now=new Date();
+  var date=(now.getMonth()+1)+'/'+now.getDate()+' '+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  logs.push({date:date,text:input.value.trim()});saveLogs(key,logs);input.value='';renderLogs(key);
+}
+function deleteLog(key,i){var logs=getLogs(key);logs.splice(i,1);saveLogs(key,logs);renderLogs(key);}
+function initAllLogs(){['sovereignty','cessation','diet','appearance','neuro','cases','pm','credit','pace'].forEach(renderLogs);}
+function showToast(msg){var t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+function saveDay(){
+  var today=new Date().toDateString();
+  var days=[];try{days=JSON.parse(localStorage.getItem('streakDays')||'[]');}catch(e){}
+  if(days.indexOf(today)===-1)days.push(today);
+  try{localStorage.setItem('streakDays',JSON.stringify(days));}catch(e){}
+  var streak=0;var d=new Date();
+  while(days.indexOf(d.toDateString())!==-1){streak++;d.setDate(d.getDate()-1);}
+  var el=document.getElementById('streakCount');if(el)el.textContent=streak;
+  showToast('Day locked in 🔥 Release it. Rest.');
+}
+function careerTab(t,el){document.getElementById('c-neuro').style.display=t==='neuro'?'block':'none';document.getElementById('c-re').style.display=t==='re'?'block':'none';document.querySelectorAll('#career .season-tab').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
+function leisureTab(t,el){['now','next','all'].forEach(function(x){document.getElementById('l-'+x).style.display=x===t?'block':'none';});document.querySelectorAll('#leisure .season-tab').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
+function homeTab(t,el){['home','kids','adult'].forEach(function(x){document.getElementById('h-'+x).style.display=x===t?'block':'none';});document.querySelectorAll('#homefamily .season-tab').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
+updateDate();updateCessation();setInterval(updateCessation,30000);initAllLogs();
+var sd=[];try{sd=JSON.parse(localStorage.getItem('streakDays')||'[]');}catch(e){}
+var s=0;var dd=new Date();while(sd.indexOf(dd.toDateString())!==-1){s++;dd.setDate(dd.getDate()-1);}
+var sc=document.getElementById('streakCount');if(sc)sc.textContent=s;
+</script>
+</body>
+</html>
