@@ -1290,33 +1290,37 @@ function getCoaching(){
   var hr=new Date().getHours();var isMorning=hr<12;
   var ctx=buildContext();
   var domains=[];document.querySelectorAll('.ctx-tag.active').forEach(function(t){domains.push(t.textContent.trim());});
-
-  var prompt='You are my AI Coach inside my Becoming OS — a personal life operating system I built for myself.\n\nAbout me:\n- I am Tiffany, a Black woman and new nurse practitioner (2 months in) working in a neuro ICU\n- I am navigating a difficult attending physician dynamic while building my clinical foundation\n- I am actively quitting smoking and tracking hours smoke-free\n- I take Bupropion daily for cessation support\n- I have a real estate portfolio (duplex + midterm rental) and I study Pace Morby methods\n- I am a mother of a 1-year-old and 4-year-old, with a 22-year-old daughter at home\n- I am working on my beauty/glow-up (Phase 1 skincare, procedures planned)\n- My five pillars: Grounded · Aligned · Healthy · Wealthy · Connected\n\n'+(isMorning?'This is a MORNING SESSION — help me set powerful intentions for today. Ask me what I want to bring into today, what I\'m preparing for, and what I want to protect.':'This is an EVENING SESSION — help me reflect on my day honestly.')+(domains.length?'\n\nI am focusing on these domains today: '+domains.join(', '):'')+(ctx?'\n\nContext from my logs:\n'+ctx:'')+'\n\nWhat I want to share:\n'+input+'\n\nPlease respond in exactly three sections:\n\n✓ WHAT I DID RIGHT\n(Acknowledge specific real wins — not generic praise)\n\n◈ MY BLIND SPOT\n(One honest observation — direct but not harsh)\n\n→ MY NEXT MOVE\n(One single action I should take in the next 24 hours — specific and doable)\n\nUnder 300 words. No filler. Be the coach I actually need.';
-
-  var encoded=encodeURIComponent(prompt);
-  var claudeUrl='https://claude.ai/new?q='+encoded;
-
-  // Show confirmation in app
-  document.getElementById('coachResponse').style.display='block';
-  document.getElementById('coachText').textContent='✦ Your coaching prompt is ready.\n\nTap the button below to open Claude with everything pre-filled. Just hit send and get your coaching session.\n\nCome back here after — your session will save in history.';
-
-  // Store for history
-  var now=new Date();var dateStr=(now.getMonth()+1)+'/'+now.getDate()+' '+(now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
-  var history=[];try{history=JSON.parse(localStorage.getItem('coachHistory')||'[]');}catch(e){}
-  history.unshift({date:dateStr,input:input.substring(0,80)+'...',prompt:prompt});
-  if(history.length>15)history=history.slice(0,15);
-  try{localStorage.setItem('coachHistory',JSON.stringify(history));}catch(e){}
-  renderCoachHistory();
-
-  currentCoachUrl=claudeUrl;
-  var btn=document.getElementById('openClaudeBtn');if(btn)btn.style.display='block';
-
-  // Open Claude
-  setTimeout(function(){window.open(claudeUrl,'_blank');},300);
+  var prompt='You are my AI Coach inside Becoming OS.\n\nAbout me: Tiffany, Black woman, new NP (2 months) in neuro ICU, navigating a difficult attending, quitting smoking (Bupropion), real estate portfolio (duplex + midterm rental, Pace Morby), mother of 1yr and 4yr old, 22yr old daughter at home, beauty glow-up Phase 1, pillars: Grounded Aligned Healthy Wealthy Connected.\n\n'+(isMorning?'MORNING SESSION — help me set powerful intentions.':'EVENING SESSION — help me reflect honestly.')+(domains.length?'\nFocusing on: '+domains.join(', '):'')+(ctx?'\nContext from logs:\n'+ctx:'')+'\n\nWhat I want to share:\n'+input+'\n\nRespond in exactly three sections:\n\n✓ WHAT I DID RIGHT\n(Specific real wins)\n\n◈ MY BLIND SPOT\n(One honest observation)\n\n→ MY NEXT MOVE\n(One specific action in the next 24 hours)\n\nUnder 300 words. No filler. Be the coach I actually need.';
+  document.getElementById('coachResponse').style.display='none';
+  document.getElementById('coachLoading').style.display='block';
+  loadIdx=0;if(document.getElementById('coachLoadMsg'))document.getElementById('coachLoadMsg').textContent=loadMsgs[0];
+  loadTimer=setInterval(function(){loadIdx=(loadIdx+1)%loadMsgs.length;if(document.getElementById('coachLoadMsg'))document.getElementById('coachLoadMsg').textContent=loadMsgs[loadIdx];},2000);
+  fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    clearInterval(loadTimer);
+    document.getElementById('coachLoading').style.display='none';
+    var text=data.response||data.error||'No response. Try again.';
+    document.getElementById('coachText').textContent=text;
+    document.getElementById('coachResponse').style.display='block';
+    var btn=document.getElementById('openClaudeBtn');if(btn)btn.style.display='none';
+    var now=new Date();var dateStr=(now.getMonth()+1)+'/'+now.getDate()+' '+(now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+    var history=[];try{history=JSON.parse(localStorage.getItem('coachHistory')||'[]');}catch(e){}
+    history.unshift({date:dateStr,input:input.substring(0,80)+'...',response:text});
+    if(history.length>15)history=history.slice(0,15);
+    try{localStorage.setItem('coachHistory',JSON.stringify(history));}catch(e){}
+    renderCoachHistory();
+  })
+  .catch(function(){
+    clearInterval(loadTimer);
+    document.getElementById('coachLoading').style.display='none';
+    document.getElementById('coachText').textContent='Connection issue. Make sure you are online and try again.';
+    document.getElementById('coachResponse').style.display='block';
+  });
 }
 function clearCoach(){document.getElementById('coachInput').value='';document.getElementById('coachResponse').style.display='none';document.querySelectorAll('.ctx-tag.active').forEach(function(t){t.classList.remove('active');});}
 function renderCoachHistory(){var container=document.getElementById('coachHistory');if(!container)return;var history=[];try{history=JSON.parse(localStorage.getItem('coachHistory')||'[]');}catch(e){}if(history.length===0){container.innerHTML='<div style="font-size:12px;color:var(--text2);font-style:italic;">No sessions yet — tap Get Coaching to start</div>';return;}container.innerHTML=history.map(function(h,i){return '<div style="background:var(--surface);border:1px solid var(--border);padding:14px;margin-bottom:6px;"><div style="font-size:9px;color:var(--gold);letter-spacing:.15em;margin-bottom:4px;font-weight:700;">'+h.date+'</div><div style="font-size:12px;color:var(--text);font-style:italic;margin-bottom:8px;">'+h.input+'</div><button onclick="reopenSession('+i+')" style="all:unset;cursor:pointer;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:700;">Reopen in Claude →</button></div>';}).join('');}
-function reopenSession(i){var history=[];try{history=JSON.parse(localStorage.getItem('coachHistory')||'[]');}catch(e){}if(history[i]&&history[i].prompt){window.open('https://claude.ai/new?q='+encodeURIComponent(history[i].prompt),'_blank');}}
+function reopenSession(i){var history=[];try{history=JSON.parse(localStorage.getItem('coachHistory')||'[]');}catch(e){}if(history[i]&&history[i].response){var el=document.getElementById('hist-resp-'+i);if(el)el.style.display=el.style.display==='none'?'block':'none';}}
 
 
 
