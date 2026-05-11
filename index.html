@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,6 +105,18 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 
 /* DOMAIN HEADER */
 .domain-header{padding:24px 20px 20px;border-bottom:1px solid var(--border);text-align:center;flex-shrink:0;}
+.domain-goals{padding:14px 20px 0;}
+.domain-goals-title{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-weight:700;}
+.domain-goals-subtitle{font-size:11px;color:var(--text2);font-style:italic;margin-bottom:12px;letter-spacing:.05em;}
+.goals-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+.goal-tag{font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border:1px solid;font-weight:600;cursor:pointer;transition:opacity .2s;user-select:none;}
+.goal-tag:active{opacity:.7;}
+.goal-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.goal-item{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--border);}
+.goal-num{font-size:10px;color:var(--gold);font-weight:700;min-width:20px;font-family:'Cormorant Garamond',serif;}
+.goal-text{font-size:13px;color:var(--cream);font-weight:500;flex:1;cursor:pointer;}
+.goal-text:focus{outline:none;border-bottom:1px solid var(--gold);}
+
 .domain-icons-lg{font-size:28px;margin-bottom:10px;line-height:1;}
 .domain-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--cream);margin-bottom:4px;}
 .domain-subtitle{font-size:13px;color:var(--text);font-style:italic;}
@@ -437,7 +450,10 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         <textarea class="reflect-input" placeholder="Tomorrow I will..." rows="2"></textarea>
         <div class="reflect-q" style="color:var(--gold);">What's the one thing tomorrow needs to go right?</div>
         <textarea class="reflect-input" placeholder="Tomorrow needs..." rows="2" style="border-bottom-color:var(--gold);"></textarea>
-        <button class="btn-gold" onclick="saveDay()" style="margin-top:16px;">Lock In Today ✓</button>
+        <button class="btn-gold" onclick="saveDay()" style="margin-top:16px;">Lock In Today ✓</button>      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="exportData()" style="all:unset;cursor:pointer;flex:1;text-align:center;padding:10px;border:1px solid var(--border2);color:var(--text2);font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;">⬇ Backup Data</button>
+        <button onclick="importData()" style="all:unset;cursor:pointer;flex:1;text-align:center;padding:10px;border:1px solid var(--border2);color:var(--text2);font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;">⬆ Restore Data</button>
+      </div>
         <button class="btn-ghost" onclick="show('coach')" style="margin-top:8px;">✦ Get AI Coaching on Today</button>
       </div>
     </div>
@@ -450,6 +466,30 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Health</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">🧘🏾‍♀️✨🌸</div><div class="domain-title">Health</div><div class="domain-subtitle">Mind · Body · Soul</div></div>
+    <div class="domain-goals">
+      <div class="domain-goals-title">Mind · Body · Soul — Your Goals</div>
+      <div class="domain-goals-subtitle">Hold any goal for 3 seconds to edit it</div>
+      <div style="margin-bottom:14px;">
+        <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--blush);margin-bottom:8px;font-weight:700;">Mind — Clarity · Peace · Elevation</div>
+        <div class="goals-strip">
+          <span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Stay Substance-Free</span>
+          <span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Daily Mindfulness</span>
+          <span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Protect Your Peace</span>
+          <span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">High-Frequency Inputs Only</span>
+          <span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Monthly Wellness Check-In</span>
+        </div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--sage);margin-bottom:8px;font-weight:700;">Body — Strength · Nourishment · Movement</div>
+        <div class="goals-strip">
+          <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Reach 150 lbs</span>
+          <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Work Out 3–5x/Week</span>
+          <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Low-Carb Nutritious Meals</span>
+          <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Hydrate Consistently</span>
+          <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Prioritize Sleep Recovery</span>
+        </div>
+      </div>
+    </div>
 
     <div class="tab-row" style="margin-top:14px;">
       <div class="tab-btn active" onclick="healthTab('sovereignty',this)">Mind</div>
@@ -614,6 +654,17 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Career</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">👩🏾‍⚕️🩺💼</div><div class="domain-title">Career</div><div class="domain-subtitle">Knowledge is potential. Application is power.</div></div>
+    <div class="domain-goals">
+      <div class="domain-goals-title">Excellence · Wealth · Influence — Your Goals</div>
+      <div class="domain-goals-subtitle">Hold any goal for 3 seconds to edit it</div>
+      <div class="goals-strip">
+        <span class="goal-tag" style="border-color:var(--gold);color:var(--gold);" data-key="career-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Clinical Excellence</span>
+        <span class="goal-tag" style="border-color:var(--gold);color:var(--gold);" data-key="career-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Rental Property Acquisition</span>
+        <span class="goal-tag" style="border-color:var(--gold);color:var(--gold);" data-key="career-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Automated Income & Digital Products</span>
+        <span class="goal-tag" style="border-color:var(--gold);color:var(--gold);" data-key="career-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Build Generational Wealth</span>
+        <span class="goal-tag" style="border-color:var(--gold);color:var(--gold);" data-key="career-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Professional Network & Reputation</span>
+      </div>
+    </div>
     <div class="tab-row" style="margin-top:14px;">
       <div class="tab-btn active" onclick="careerTab('neuro',this)">Neuro ICU</div>
       <div class="tab-btn" onclick="careerTab('re',this)">Real Estate</div>
@@ -687,6 +738,17 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Leisure</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">🦋🌺☀️✈️</div><div class="domain-title">Leisure</div><div class="domain-subtitle">Joy · Freedom · Adventure · Rest</div></div>
+    <div class="domain-goals">
+      <div class="domain-goals-title">Growth · Joy · Experience — Your Goals</div>
+      <div class="domain-goals-subtitle">Hold any goal for 3 seconds to edit it</div>
+      <div class="goals-strip">
+        <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="leisure-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Learn to Swim</span>
+        <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="leisure-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Learn Spanish</span>
+        <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="leisure-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Master Cooking, Candles & Sewing</span>
+        <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="leisure-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Grow Your Own Food</span>
+        <span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="leisure-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Travel Consistently</span>
+      </div>
+    </div>
     <div class="tab-row" style="margin-top:14px;">
       <div class="tab-btn active" onclick="leisureTab('now',this)">Now</div>
       <div class="tab-btn" onclick="leisureTab('next',this)">Next</div>
@@ -741,6 +803,17 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Home & Family</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">👑🕯️🌙🤍</div><div class="domain-title">Home &<br>Family</div><div class="domain-subtitle">Queen · Warmth · Love · Foundation</div></div>
+    <div class="domain-goals">
+      <div class="domain-goals-title">Legacy · Environment · Connection — Your Goals</div>
+      <div class="domain-goals-subtitle">Hold any goal for 3 seconds to edit it</div>
+      <div class="goals-strip">
+        <span class="goal-tag" style="border-color:var(--lavender);color:var(--lavender);" data-key="home-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Design Home & Backyard</span>
+        <span class="goal-tag" style="border-color:var(--lavender);color:var(--lavender);" data-key="home-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Elevate Family Through Education</span>
+        <span class="goal-tag" style="border-color:var(--lavender);color:var(--lavender);" data-key="home-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Build Lasting Family Memories</span>
+        <span class="goal-tag" style="border-color:var(--lavender);color:var(--lavender);" data-key="home-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Generational Wealth Structures</span>
+        <span class="goal-tag" style="border-color:var(--lavender);color:var(--lavender);" data-key="home-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Improve Family Health & Environment</span>
+      </div>
+    </div>
     <div class="tab-row" style="margin-top:14px;">
       <div class="tab-btn active" onclick="homeTab('home',this)">Home</div>
       <div class="tab-btn" onclick="homeTab('kids',this)">Little Ones</div>
@@ -1346,12 +1419,80 @@ function initStreak(){
 // ── INIT ──
 updateDate();
 updateCessation();
+loadSavedGoals();
 setInterval(updateCessation,1000);
 initAllLogs();
 initDayTracker();
 initStreak();
 initHomeFlow();
 buildPlanner();
+
+// ── LONG PRESS TO EDIT GOALS ──
+var holdTimer=null;var holdTarget=null;
+function startHold(el){
+  holdTarget=el;
+  holdTimer=setTimeout(function(){
+    var key=el.getAttribute('data-key');
+    var current=el.textContent.trim();
+    var saved=localStorage.getItem('goal_'+key);
+    if(saved)el.textContent=saved;
+    var newVal=prompt('Edit this goal:',el.textContent.trim());
+    if(newVal&&newVal.trim()){
+      el.textContent=newVal.trim();
+      try{localStorage.setItem('goal_'+key,newVal.trim());}catch(e){}
+    }
+  },2000);
+}
+function endHold(){
+  if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}
+}
+
+// ── LOAD SAVED GOALS ──
+function loadSavedGoals(){
+  document.querySelectorAll('[data-key]').forEach(function(el){
+    var key=el.getAttribute('data-key');
+    var saved=localStorage.getItem('goal_'+key);
+    if(saved)el.textContent=saved;
+  });
+}
+
+// ── EXPORT BACKUP ──
+function exportData(){
+  var data={};
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    data[k]=localStorage.getItem(k);
+  }
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='becoming-os-backup-'+new Date().toISOString().split('T')[0]+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded ✓');
+}
+
+// ── IMPORT BACKUP ──
+function importData(){
+  var input=document.createElement('input');
+  input.type='file';input.accept='.json';
+  input.onchange=function(e){
+    var file=e.target.files[0];if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        var data=JSON.parse(ev.target.result);
+        Object.keys(data).forEach(function(k){localStorage.setItem(k,data[k]);});
+        showToast('Data restored ✓ — reloading...');
+        setTimeout(function(){location.reload();},1500);
+      }catch(err){showToast('Invalid backup file');}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
 </script>
 </body>
 </html>
