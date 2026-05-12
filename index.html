@@ -25,24 +25,16 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
 body{background:var(--bg);color:var(--cream);font-family:'Jost',sans-serif;font-weight:400;max-width:480px;margin:0 auto;position:relative;}
-
-/* SCREENS */
 .screen{display:none;height:100vh;flex-direction:column;overflow:hidden;}
 .screen.active{display:flex;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 @keyframes shimmer{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}
-
-/* SCROLL */
 .scroll-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:100px;}
-
-/* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10;}
 .topbar-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;letter-spacing:.08em;color:var(--gold);}
 .back-btn{font-size:10px;letter-spacing:.25em;color:var(--text);text-transform:uppercase;cursor:pointer;padding:4px 0;font-weight:500;}
 .back-btn:active{color:var(--gold);}
-
-/* HOME HERO */
 .home-hero{padding:36px 24px 28px;border-bottom:1px solid var(--border);text-align:center;background:radial-gradient(ellipse at 50% 0%,#1e1608 0%,var(--bg) 70%);flex-shrink:0;}
 .hero-icon{display:flex;justify-content:center;margin-bottom:18px;}
 .hero-date{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--text2);margin-bottom:6px;font-weight:500;}
@@ -52,39 +44,27 @@ body{background:var(--bg);color:var(--cream);font-family:'Jost',sans-serif;font-
 .pillar-tag{font-size:8px;letter-spacing:.2em;text-transform:uppercase;padding:4px 10px;border:1px solid var(--border2);color:var(--text);font-weight:500;}
 .streak-row{display:flex;justify-content:center;margin-top:10px;}
 .streak-pill{display:inline-flex;align-items:center;gap:5px;background:var(--gold-dim);border:1px solid var(--gold2);padding:5px 12px;font-size:11px;color:var(--gold);font-weight:500;}
-
-/* FLOW STEPS */
 .flow-step{animation:fadeUp .4s ease forwards;padding-bottom:24px;}
 .flow-label{font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-weight:600;}
 .flow-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:var(--cream);line-height:1.1;margin-bottom:8px;}
 .flow-title em{font-style:italic;color:var(--gold);}
 .flow-sub{font-size:14px;color:var(--text);line-height:1.6;font-weight:400;}
-
-/* GRATITUDE */
 .grat-morning{text-align:center;padding:32px 24px 24px;}
 .grat-greeting{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;font-style:italic;color:var(--gold);margin-bottom:8px;}
 .grat-copy{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:24px;font-weight:400;}
 .grat-done-item{font-size:14px;color:var(--cream);font-style:italic;font-weight:500;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);margin-bottom:8px;text-align:left;}
-
-/* INPUTS */
 .g-input{background:var(--surface);border:1px solid var(--border);border-bottom:2px solid var(--gold2);padding:14px 16px;color:var(--cream);font-family:'Jost',sans-serif;font-size:15px;font-weight:600;width:100%;transition:border-color .2s;display:block;margin-bottom:8px;}
 .g-input:focus{outline:none;border-bottom-color:var(--gold);}
 .g-input::placeholder{color:var(--text2);font-weight:400;font-style:italic;}
 textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
-
-/* BUTTONS */
 .btn-gold{all:unset;cursor:pointer;background:var(--gold);color:var(--bg);padding:15px 24px;font-size:11px;letter-spacing:.28em;text-transform:uppercase;text-align:center;width:100%;display:block;font-weight:700;margin-top:12px;}
 .btn-gold:active{background:var(--gold2);}
 .btn-ghost{all:unset;cursor:pointer;border:1px solid var(--border2);color:var(--text);padding:12px 20px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;text-align:center;width:100%;display:block;margin-top:8px;font-weight:500;}
 .btn-ghost:active{border-color:var(--gold);color:var(--gold);}
 .btn-blush{all:unset;cursor:pointer;background:var(--blush);color:white;padding:15px 24px;font-size:11px;letter-spacing:.28em;text-transform:uppercase;text-align:center;width:100%;display:block;font-weight:700;margin-top:12px;}
-
-/* SECTION */
 .section-pad{padding:20px 20px;}
 .section-label{font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:10px;font-weight:600;}
 .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
-
-/* DOMAIN TILES */
 .domain-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px;}
 .domain-tile{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--border2);padding:18px 14px;cursor:pointer;position:relative;transition:all .2s;}
 .domain-tile:active{border-color:var(--gold);}
@@ -101,8 +81,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .domain-tile.full-width{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:14px 18px;}
 .domain-tile.full-width .tile-icons{font-size:22px;margin:0;flex-shrink:0;}
 .domain-tile.full-width .tile-name{font-size:18px;}
-
-/* DOMAIN HEADER */
 .domain-header{padding:24px 20px 20px;border-bottom:1px solid var(--border);text-align:center;flex-shrink:0;}
 .domain-goals{padding:14px 20px 0;}
 .domain-goals-title{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-weight:700;}
@@ -115,17 +93,12 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .goal-num{font-size:10px;color:var(--gold);font-weight:700;min-width:20px;font-family:'Cormorant Garamond',serif;}
 .goal-text{font-size:13px;color:var(--cream);font-weight:500;flex:1;cursor:pointer;}
 .goal-text:focus{outline:none;border-bottom:1px solid var(--gold);}
-
 .domain-icons-lg{font-size:28px;margin-bottom:10px;line-height:1;}
 .domain-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--cream);margin-bottom:4px;}
 .domain-subtitle{font-size:13px;color:var(--text);font-style:italic;}
-
-/* PHASE STRIP */
 .phase-strip{padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);}
 .phase-now{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:3px;font-weight:600;}
 .phase-name{font-size:15px;color:var(--cream);font-family:'Cormorant Garamond',serif;font-weight:600;}
-
-/* PILLAR CARDS */
 .pillar-list{padding:14px 20px;display:flex;flex-direction:column;gap:8px;}
 .pillar-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border2);padding:16px;}
 .pillar-card.active-focus{border-left-color:var(--gold);}
@@ -144,18 +117,16 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .progress-track{background:var(--border);height:2px;}
 .progress-fill{height:100%;background:var(--gold);}
 .progress-label{font-size:9px;color:var(--text2);margin-top:4px;font-weight:500;}
-
-/* SUB ITEMS */
 .sub-items{display:flex;flex-direction:column;gap:5px;margin-top:10px;}
 .sub-item{background:var(--surface2);border:1px solid var(--border);padding:11px 14px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
-.sub-check{width:18px;height:18px;border:1px solid var(--border2);border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .2s;}
+.sub-check{width:18px;height:18px;border:1px solid var(--border2);border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .2s;position:relative;}
 .sub-check.done{background:var(--gold);border-color:var(--gold);}
 .sub-check.done::after{content:'✓';font-size:10px;color:var(--bg);font-weight:700;}
+.sub-check.has-log::before{content:'';position:absolute;top:-4px;right:-4px;width:7px;height:7px;background:var(--gold);border-radius:50%;border:1.5px solid var(--bg);z-index:1;}
+.sub-check.done.has-log::after{content:'✓';}
 .sub-text{flex:1;}
 .sub-name{font-size:13px;color:var(--cream);margin-bottom:2px;font-weight:500;}
 .sub-detail{font-size:11px;color:var(--text);font-style:italic;}
-
-/* HISTORY LOG */
 .history-section{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;}
 .history-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;font-weight:600;}
 .history-entries{display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;margin-bottom:8px;}
@@ -168,14 +139,10 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .history-input:focus{outline:none;border-bottom-color:var(--gold);}
 .history-input::placeholder{color:var(--text2);font-weight:400;font-style:italic;}
 .history-btn{all:unset;cursor:pointer;background:var(--gold);color:var(--bg);padding:9px 14px;font-size:11px;font-weight:700;flex-shrink:0;}
-
-/* TABS */
 .tab-row{display:flex;margin:0 20px 14px;border:1px solid var(--border);}
 .tab-btn{flex:1;padding:10px 4px;text-align:center;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text);cursor:pointer;border-right:1px solid var(--border);transition:all .2s;font-weight:500;}
 .tab-btn:last-child{border-right:none;}
 .tab-btn.active{background:var(--gold-dim);color:var(--gold);font-weight:700;}
-
-/* CHECKLIST */
 .check-cat{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin:14px 20px 8px;font-weight:600;}
 .checklist{padding:0 20px;display:flex;flex-direction:column;gap:5px;margin-bottom:4px;}
 .check-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);cursor:pointer;}
@@ -184,12 +151,8 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .check-box.done::after{content:'✓';font-size:11px;color:var(--bg);font-weight:700;}
 .check-name{font-size:13px;color:var(--cream);margin-bottom:2px;font-weight:500;}
 .check-sub{font-size:11px;color:var(--text);font-style:italic;}
-
-/* INFO NOTE */
 .info-note{margin:0 20px 12px;padding:12px 14px;background:var(--gold-dim);border-left:2px solid var(--gold2);font-size:12px;color:var(--text);font-style:italic;line-height:1.6;font-weight:400;}
 .info-blush{margin:0 20px 12px;padding:12px 14px;background:var(--blush-dim);border-left:2px solid var(--blush);font-size:12px;color:var(--text);font-style:italic;line-height:1.6;}
-
-/* CESSATION */
 .cessation-card{background:var(--surface);border:1px solid var(--border);padding:20px;margin:12px 20px 0;text-align:center;}
 .cessation-title{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:12px;font-weight:700;}
 .cessation-display{display:flex;align-items:baseline;justify-content:center;gap:6px;}
@@ -200,45 +163,33 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .cessation-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
 .cessation-btn{all:unset;cursor:pointer;padding:9px 16px;background:var(--blush);color:white;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;}
 .cessation-log-btn{all:unset;cursor:pointer;padding:9px 12px;border:1px solid var(--blush);color:var(--blush);font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:600;}
-
-/* METRICS */
 .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .metric-card{background:var(--surface);border:1px solid var(--border);padding:14px;}
 .metric-name{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;font-weight:600;}
 .metric-slider{width:100%;accent-color:var(--gold);cursor:pointer;display:block;margin:4px 0;}
 .metric-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);font-weight:700;}
-
-/* PLANNER */
 .planner-slot{display:flex;gap:12px;align-items:flex-start;padding:0 20px;margin-bottom:4px;}
 .planner-time{font-size:10px;color:var(--text2);min-width:48px;padding-top:12px;letter-spacing:.05em;font-weight:600;}
 .planner-input{flex:1;background:var(--surface);border:none;border-bottom:1px solid var(--border);padding:10px 0;color:var(--cream);font-family:'Jost',sans-serif;font-size:13px;font-weight:600;transition:border-color .2s;}
 .planner-input:focus{outline:none;border-bottom-color:var(--gold);}
 .planner-input::placeholder{color:var(--text2);font-weight:400;}
 .planner-input.prefilled{color:var(--gold);font-style:italic;}
-
-/* REFLECTION */
 .reflect-q{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;font-style:italic;color:var(--cream);margin-bottom:8px;margin-top:18px;}
 .reflect-q:first-child{margin-top:0;}
 .reflect-input{background:var(--surface);border:1px solid var(--border);border-bottom:2px solid var(--gold2);padding:12px 14px;color:var(--cream);font-family:'Jost',sans-serif;font-size:14px;font-weight:600;width:100%;resize:none;min-height:56px;transition:border-color .2s;display:block;line-height:1.6;}
 .reflect-input:focus{outline:none;border-bottom-color:var(--gold);}
 .reflect-input::placeholder{color:var(--text2);font-weight:400;font-style:italic;}
-
-/* REDESIGN */
 .redesign-item{background:var(--surface);border:1px solid var(--border);padding:14px;margin-bottom:6px;}
 .redesign-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
 .redesign-name{font-size:14px;color:var(--cream);font-weight:500;}
 .redesign-toggle{font-size:11px;color:var(--text2);}
 .redesign-detail{display:none;margin-top:10px;}
-
-/* AI COACH */
 .ctx-tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:7px 12px;border:1px solid var(--border2);color:var(--text);cursor:pointer;transition:all .2s;font-weight:500;}
 .ctx-tag.active{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700;}
 .coach-response-wrap{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);padding:20px;margin-top:16px;}
 .coach-section-head{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;margin-top:16px;font-weight:700;}
 .coach-section-head:first-child{margin-top:0;}
 .coach-text{font-size:14px;color:var(--cream);line-height:1.8;font-weight:400;}
-
-/* BEAUTY */
 .beauty-goals{display:flex;flex-wrap:wrap;gap:6px;padding:0 20px 14px;}
 .beauty-goal{font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--lavender);color:var(--lavender);font-weight:600;}
 .shopping-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);margin-bottom:5px;cursor:pointer;}
@@ -247,8 +198,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .shop-check.done::after{content:'✓';font-size:9px;color:white;font-weight:700;}
 .shop-name{font-size:13px;color:var(--cream);font-weight:500;}
 .shop-have{color:var(--sage);}
-
-/* RESET OVERLAY */
 .reset-overlay{display:none;position:fixed;inset:0;background:rgba(10,8,6,.97);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;overflow-y:auto;}
 .reset-overlay.active{display:flex;}
 .reset-headline{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;color:var(--cream);margin-bottom:6px;}
@@ -260,29 +209,45 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .r-num{font-size:10px;letter-spacing:.2em;color:var(--blush);min-width:20px;margin-top:2px;font-weight:700;}
 .r-text{font-size:13px;color:var(--text);line-height:1.5;font-weight:400;}
 .r-text strong{color:var(--cream);font-weight:600;}
-
-/* FAB */
 .fab{position:fixed;bottom:24px;right:20px;background:var(--blush);color:white;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;z-index:100;box-shadow:0 4px 20px rgba(196,122,106,.3);transition:transform .2s;}
 .fab:active{transform:scale(.93);}
-
-/* TOAST */
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gold);color:var(--bg);padding:10px 20px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:all .35s;pointer-events:none;z-index:300;white-space:nowrap;font-weight:700;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-/* DAY SUMMARY */
 .summary-item{font-size:13px;color:var(--cream);padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;font-weight:500;}
 .summary-label{font-size:9px;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;font-weight:700;}
 .glance-block{background:var(--surface2);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px;}
 .glance-title{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;font-weight:700;}
-
 .pad{padding:0 20px;}
 .mt{margin-top:14px;}
+/* ── PROGRESS LOG POPUP ── */
+.log-popup-overlay{display:none;position:fixed;inset:0;background:rgba(10,8,6,.88);z-index:500;align-items:flex-end;}
+.log-popup-overlay.active{display:flex;}
+.log-popup{background:var(--surface);border-top:2px solid var(--gold);width:100%;max-height:82vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.log-popup-handle{width:36px;height:3px;background:var(--border2);border-radius:2px;margin:14px auto 0;}
+.log-popup-header{padding:16px 20px 14px;border-bottom:1px solid var(--border);}
+.log-popup-habit{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--cream);margin-bottom:4px;}
+.log-popup-date{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);font-weight:600;}
+.log-popup-entries{padding:12px 20px 0;display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;}
+.log-popup-entry{background:var(--surface2);border:1px solid var(--border);padding:9px 12px;display:flex;gap:10px;align-items:flex-start;}
+.log-popup-entry-date{font-size:9px;color:var(--text2);min-width:64px;margin-top:1px;font-weight:500;}
+.log-popup-entry-text{font-size:12px;color:var(--cream);line-height:1.5;flex:1;font-weight:500;}
+.log-popup-entry-del{font-size:16px;color:var(--border2);cursor:pointer;flex-shrink:0;padding:0 4px;line-height:1;}
+.log-popup-entry-del:active{color:var(--blush);}
+.log-popup-input-wrap{padding:14px 20px 0;}
+.log-popup-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-bottom:2px solid var(--gold2);padding:12px 14px;color:var(--cream);font-family:'Jost',sans-serif;font-size:14px;font-weight:500;resize:none;min-height:80px;line-height:1.6;display:block;}
+.log-popup-textarea:focus{outline:none;border-bottom-color:var(--gold);}
+.log-popup-textarea::placeholder{color:var(--text2);font-weight:400;font-style:italic;}
+.log-popup-actions{padding:12px 20px 28px;display:flex;gap:8px;}
+.log-popup-save{all:unset;cursor:pointer;background:var(--gold);color:var(--bg);padding:14px 20px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;font-weight:700;flex:1;text-align:center;}
+.log-popup-save:active{background:var(--gold2);}
+.log-popup-done{all:unset;cursor:pointer;border:1px solid var(--border2);color:var(--text);padding:14px 18px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;text-align:center;}
+.log-popup-done:active{border-color:var(--gold);color:var(--gold);}
+.log-popup-empty{font-size:11px;color:var(--text2);font-style:italic;padding:4px 0 8px;}
 </style>
 </head>
 <body>
-
 <div class="toast" id="toast"></div>
-
 <!-- RESET OVERLAY -->
 <div class="reset-overlay" id="resetOverlay">
   <div class="reset-headline">Come <em>Back.</em></div>
@@ -297,9 +262,25 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
   </div>
   <button style="all:unset;cursor:pointer;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--text2);padding:12px;font-weight:600;" onclick="closeReset()">← Return</button>
 </div>
-
+<!-- PROGRESS LOG POPUP -->
+<div class="log-popup-overlay" id="logPopupOverlay" onclick="closeLogPopup(event)">
+  <div class="log-popup" id="logPopup">
+    <div class="log-popup-handle"></div>
+    <div class="log-popup-header">
+      <div class="log-popup-habit" id="logPopupHabit">Habit</div>
+      <div class="log-popup-date" id="logPopupDate"></div>
+    </div>
+    <div class="log-popup-entries" id="logPopupEntries"></div>
+    <div class="log-popup-input-wrap">
+      <textarea class="log-popup-textarea" id="logPopupTextarea" placeholder="What happened, how it felt, what you noticed..."></textarea>
+    </div>
+    <div class="log-popup-actions">
+      <button class="log-popup-save" onclick="saveLogEntry()">Save Entry ✓</button>
+      <button class="log-popup-done" onclick="forceCloseLogPopup()">Done</button>
+    </div>
+  </div>
+</div>
 <div class="fab" onclick="openReset()">↺</div>
-
 <!-- ═══════════════ HOME ═══════════════ -->
 <div class="screen active" id="home">
   <div class="home-hero">
@@ -325,35 +306,27 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
     </div>
     <div class="streak-row"><div class="streak-pill">🔥 <span id="streakCount">0</span> day streak</div></div>
   </div>
-
   <div class="scroll-content" id="homeFlow">
-
-    <!-- STEP: GRATITUDE -->
     <div id="step-gratitude" class="flow-step" style="display:none;">
       <div class="grat-morning">
         <div class="grat-greeting">Good morning, Tiffany 🥰</div>
         <div class="grat-copy">Today is a gift — and so are you.<br>Before the world gets loud, let's start<br>somewhere soft. <em>What are you grateful for?</em></div>
         <div id="grat1done" class="grat-done-item" style="display:none;"></div>
         <div id="grat2done" class="grat-done-item" style="display:none;"></div>
-        <!-- Step 1 -->
         <div id="grat-step1">
           <input class="g-input" id="g1" placeholder="I'm grateful for..." style="text-align:center;margin-top:16px;" />
           <button class="btn-gold" onclick="nextGrat(1)">Next →</button>
         </div>
-        <!-- Step 2 -->
         <div id="grat-step2" style="display:none;">
           <input class="g-input" id="g2" placeholder="And another thing..." style="text-align:center;margin-top:16px;" />
           <button class="btn-gold" onclick="nextGrat(2)">One more →</button>
         </div>
-        <!-- Step 3 -->
         <div id="grat-step3" style="display:none;">
           <input class="g-input" id="g3" placeholder="One more..." style="text-align:center;margin-top:16px;" />
           <button class="btn-gold" onclick="nextGrat(3)">Continue to My Day →</button>
         </div>
       </div>
     </div>
-
-    <!-- STEP: DOMAINS -->
     <div id="step-domains" class="flow-step" style="display:none;">
       <div class="section-pad" style="padding-bottom:12px;">
         <div class="flow-label">Morning · Step 2</div>
@@ -370,8 +343,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       </div>
       <div class="pad mt"><button class="btn-gold" onclick="showStep('priorities')">Set My Priorities →</button></div>
     </div>
-
-    <!-- STEP: PRIORITIES -->
     <div id="step-priorities" class="flow-step" style="display:none;">
       <div class="section-pad">
         <div class="flow-label">Morning · Step 3</div>
@@ -386,8 +357,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         <button class="btn-gold" onclick="showStep('planner')" style="margin-top:16px;">Plan My Day →</button>
       </div>
     </div>
-
-    <!-- STEP: PLANNER -->
     <div id="step-planner" class="flow-step" style="display:none;">
       <div class="section-pad" style="padding-bottom:12px;">
         <div class="flow-label">Morning · Step 4</div>
@@ -397,30 +366,20 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       <div id="plannerSlots" style="margin-bottom:16px;"></div>
       <div class="pad"><button class="btn-gold" onclick="completeMorning()">Lock In Morning ✓</button></div>
     </div>
-
-    <!-- DAY VIEW -->
     <div id="step-day" class="flow-step" style="display:none;">
       <div class="section-pad">
         <div class="flow-label" id="dayLabel">Your Day</div>
         <div class="flow-title" id="dayTitle">Morning <em>locked in.</em></div>
         <div class="flow-sub" id="daySub">Go be great. Come back at 6pm for your evening reflection.</div>
-
-        <!-- Today at a glance -->
         <div class="glance-block" style="margin-top:20px;">
           <div class="glance-title">Today at a Glance</div>
           <div id="glanceSummary"></div>
         </div>
-
-        <!-- Morning summary -->
         <div style="margin-top:12px;"><div class="section-label">This Morning</div><div id="morningSummary"></div></div>
-
-        <!-- Domains primary -->
         <button class="btn-gold" onclick="showStep('domains')" style="margin-top:20px;">↗ My Domains</button>
         <button class="btn-ghost" onclick="showStep('evening')" id="eveningBtn">Evening Reflection</button>
       </div>
     </div>
-
-    <!-- EVENING -->
     <div id="step-evening" class="flow-step" style="display:none;">
       <div class="section-pad">
         <div class="flow-label">Evening · Wind Down</div>
@@ -436,7 +395,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         </div>
         <div id="metricsPrompt" style="margin-top:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);font-size:11px;color:var(--text2);font-style:italic;text-align:center;font-weight:500;">Move all 6 sliders to unlock your reflection ↓</div>
       </div>
-
       <div id="reflectionWrap" style="display:none;padding:0 20px 20px;animation:fadeUp .5s ease forwards;">
         <div class="section-label">Nightly Reflection</div>
         <div class="reflect-q">Where was I aligned today?</div>
@@ -449,31 +407,29 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         <textarea class="reflect-input" placeholder="Tomorrow I will..." rows="2"></textarea>
         <div class="reflect-q" style="color:var(--gold);">What's the one thing tomorrow needs to go right?</div>
         <textarea class="reflect-input" placeholder="Tomorrow needs..." rows="2" style="border-bottom-color:var(--gold);"></textarea>
-        <button class="btn-gold" onclick="saveDay()" style="margin-top:16px;">Lock In Today ✓</button>      <div style="display:flex;gap:8px;margin-top:12px;">
-        <button onclick="exportData()" style="all:unset;cursor:pointer;flex:1;text-align:center;padding:10px;border:1px solid var(--border2);color:var(--text2);font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;">⬇ Backup Data</button>
-        <button onclick="importData()" style="all:unset;cursor:pointer;flex:1;text-align:center;padding:10px;border:1px solid var(--border2);color:var(--text2);font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;">⬆ Restore Data</button>
-      </div>
+        <button class="btn-gold" onclick="saveDay()" style="margin-top:16px;">Lock In Today ✓</button>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button onclick="exportData()" style="all:unset;cursor:pointer;flex:1;text-align:center;padding:10px;border:1px solid var(--border2);color:var(--text2);font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;">⬇ Backup Data</button>
+          <button onclick="importData()" style="all:unset;cursor:pointer;flex:1;text-align:center;padding:10px;border:1px solid var(--border2);color:var(--text2);font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;">⬆ Restore Data</button>
+        </div>
         <button class="btn-ghost" onclick="show('coach')" style="margin-top:8px;">✦ Get AI Coaching on Today</button>
       </div>
     </div>
-
   </div>
 </div>
-
 <!-- ═══════════════ HEALTH ═══════════════ -->
 <div class="screen" id="health">
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Health</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">🧘🏾‍♀️✨🌸</div><div class="domain-title">Health</div><div class="domain-subtitle">Mind · Body · Soul</div></div>
-
     <div class="tab-row" style="margin-top:14px;">
       <div class="tab-btn active" onclick="healthTab('sovereignty',this)">Mind</div>
       <div class="tab-btn" onclick="healthTab('body',this)">Body</div>
       <div class="tab-btn" onclick="healthTab('beauty',this)">Beauty</div>
     </div>
-
     <!-- MIND -->
-    <div id="ht-sovereignty"> <div style="padding:14px 20px 8px;"><div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:10px;font-weight:700;">Mind Goals — Hold to Edit</div><div class="goals-strip"><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Stay Substance-Free</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Daily Mindfulness</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Protect Your Peace</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">High-Frequency Inputs Only</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Monthly Wellness Check-In</span></div></div>
+    <div id="ht-sovereignty">
+      <div style="padding:14px 20px 8px;"><div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:10px;font-weight:700;">Mind Goals — Hold to Edit</div><div class="goals-strip"><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Stay Substance-Free</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Daily Mindfulness</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Protect Your Peace</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">High-Frequency Inputs Only</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Monthly Wellness Check-In</span></div></div>
       <div class="cessation-card">
         <div class="cessation-title">Smoke-Free Clock</div>
         <div class="cessation-display"><span class="cessation-hours" id="cessHours">0</span><span class="cessation-unit">hr</span><span class="cessation-mins" id="cessMins">:00:00</span></div>
@@ -501,7 +457,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div class="pillar-header"><span class="pillar-name">Smoking Cessation</span><span class="pillar-status">Active</span></div>
           <div class="pillar-desc">Same nervous system. Urge = drift signal. Name the trigger, run the reset, replace the behavior.</div>
           <div class="sub-items">
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Logged urge + trigger</div><div class="sub-detail">Stress? Boredom? After a shift?</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Logged urge and trigger</div><div class="sub-detail">Stress? Boredom? After a shift?</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Read or listened to cessation content</div><div class="sub-detail">Feed the new identity</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Replaced with alternative behavior</div><div class="sub-detail">Walk, water, breath work — anything else</div></div></div>
           </div>
@@ -509,9 +465,9 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         </div>
       </div>
     </div>
-
     <!-- BODY -->
-    <div id="ht-body" style="display:none;"> <div style="padding:14px 20px 8px;"><div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--sage);margin-bottom:10px;font-weight:700;">Body Goals — Hold to Edit</div><div class="goals-strip"><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Reach 150 lbs</span><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Work Out 3–5x/Week</span><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Low-Carb Nutritious Meals</span><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Hydrate Consistently</span><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Prioritize Sleep Recovery</span></div></div>
+    <div id="ht-body" style="display:none;">
+      <div style="padding:14px 20px 8px;"><div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--sage);margin-bottom:10px;font-weight:700;">Body Goals — Hold to Edit</div><div class="goals-strip"><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Reach 150 lbs</span><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Work Out 3–5x/Week</span><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Low-Carb Nutritious Meals</span><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Hydrate Consistently</span><span class="goal-tag" style="border-color:var(--sage);color:var(--sage);" data-key="body-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Prioritize Sleep Recovery</span></div></div>
       <div class="pillar-list">
         <div class="pillar-card building">
           <div class="pillar-header"><span class="pillar-name">Diet & Exercise</span><span class="pillar-status">Building</span></div>
@@ -520,7 +476,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Movement today</div><div class="sub-detail">20+ min — walking counts</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Protected sleep</div><div class="sub-detail">In bed by your target time</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional nutrition</div><div class="sub-detail">No chaotic eating today</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Bupropion taken 💊</div><div class="sub-detail">Take with food, same time daily</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Bupropion taken</div><div class="sub-detail">Take with food, same time daily</div></div></div>
           </div>
           <div class="history-section"><div class="history-label">Body Progress Log</div><div class="history-entries" id="log-diet"></div><div class="history-add-row"><input class="history-input" id="in-diet" placeholder="Walked 30 min, skipped emotional snacking..."/><button class="history-btn" onclick="addLog('diet')">+</button></div></div>
         </div>
@@ -530,13 +486,12 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div class="sub-items">
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Hair maintained</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional outfit</div><div class="sub-detail">Dressed how you want to feel</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Makeup / grooming done</div><div class="sub-detail">Glam is self-respect made visible</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Makeup and grooming done</div><div class="sub-detail">Glam is self-respect made visible</div></div></div>
           </div>
           <div class="history-section"><div class="history-label">Appearance Log</div><div class="history-entries" id="log-appearance"></div><div class="history-add-row"><input class="history-input" id="in-appearance" placeholder="Got hair done, felt myself today..."/><button class="history-btn" onclick="addLog('appearance')">+</button></div></div>
         </div>
       </div>
     </div>
-
     <!-- BEAUTY -->
     <div id="ht-beauty" style="display:none;">
       <div style="padding:14px 20px 8px;"><div class="section-label">Becoming Her — Goals</div></div>
@@ -549,7 +504,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         <div class="tab-btn" onclick="beautyTab('phase3',this)">Phase 3</div>
         <div class="tab-btn" onclick="beautyTab('shopping',this)">Shopping</div>
       </div>
-
       <div id="bt-phase1">
         <div class="info-note">Days 1–30 · Lock In the Foundation</div>
         <div class="check-cat">Daily AM Routine</div>
@@ -574,7 +528,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         </div>
         <div class="pad mt"><div class="history-section"><div class="history-label">Skin Progress Log</div><div class="history-entries" id="log-beauty"></div><div class="history-add-row"><input class="history-input" id="in-beauty" placeholder="Noticed improvement in dark spots..."/><button class="history-btn" onclick="addLog('beauty')">+</button></div></div></div>
       </div>
-
       <div id="bt-phase2" style="display:none;">
         <div class="info-note">Month 2–4 · Procedures Begin</div>
         <div class="info-blush">⚠️ Never stack procedures less than 4–6 weeks apart. Always find a medspa with experience in melanin-rich skin.</div>
@@ -582,14 +535,13 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div class="pillar-card also-active">
             <div class="pillar-header"><span class="pillar-name">Vampire Facial #1</span><span class="pillar-status">Month 2</span></div>
             <div class="pillar-desc">Already have 2 scheduled. Wait 6 weeks minimum before next procedure.</div>
-            <div class="sub-items"><div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Medspa confirmed — melanin-rich skin experience</div></div></div></div>
+            <div class="sub-items"><div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Medspa confirmed for melanin-rich skin</div></div></div></div>
           </div>
           <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">VI Peel</span><span class="pillar-status">6 weeks after Vampire Facial</span></div><div class="pillar-desc">Wait full 6 weeks. No exceptions.</div></div>
           <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">Professional Lip Depigmentation</span><span class="pillar-status">Month 3–4</span></div></div>
           <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">Peptide Serum + Latisse Rx</span><span class="pillar-status">Add Month 2</span></div><div class="pillar-desc">The Ordinary Buffet peptide serum. Latisse requires prescription.</div></div>
         </div>
       </div>
-
       <div id="bt-phase3" style="display:none;">
         <div class="info-note">Month 5–12 · Maintain & Maximize</div>
         <div class="pillar-list">
@@ -600,7 +552,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">Dermatologist — Mole Assessment</span><span class="pillar-status">Schedule Now</span></div></div>
         </div>
       </div>
-
       <div id="bt-shopping" style="display:none;">
         <div style="padding:14px 20px 8px;"><div class="section-label">Already Have ✓</div></div>
         <div class="pad">
@@ -623,7 +574,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
     </div>
   </div>
 </div>
-
 <!-- ═══════════════ CAREER ═══════════════ -->
 <div class="screen" id="career">
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Career</span><span></span></div>
@@ -660,7 +610,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);font-weight:600;margin-bottom:8px;">Case Library & Education</div>
           <div class="sub-items" style="margin-top:0;">
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Case library — reviewed a case today</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Guideline / protocol reviewed</div><div class="sub-detail">Rotate weekly through neuro topics</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Guideline or protocol reviewed</div><div class="sub-detail">Rotate weekly through neuro topics</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Deep work block done</div><div class="sub-detail">45–90 min, phone away</div></div></div>
           </div>
           <div class="history-section"><div class="history-label">Case Library Log</div><div class="history-entries" id="log-cases"></div><div class="history-add-row"><input class="history-input" id="in-cases" placeholder="Completed SAH case module..."/><button class="history-btn" onclick="addLog('cases')">+</button></div></div>
@@ -685,8 +635,8 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:4px;">Active</div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--cream);margin-bottom:10px;">Property Management</div>
           <div class="sub-items" style="margin-top:0;">
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Duplex — tenant / maintenance action</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Midterm rental — pricing / occupancy checked</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Duplex — tenant or maintenance action</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Midterm rental — pricing and occupancy checked</div></div></div>
           </div>
           <div class="history-section"><div class="history-label">Activity Log</div><div class="history-entries" id="log-pm"></div><div class="history-add-row"><input class="history-input" id="in-pm" placeholder="Tenant confirmed new payment system..."/><button class="history-btn" onclick="addLog('pm')">+</button></div></div>
         </div>
@@ -707,7 +657,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
     </div>
   </div>
 </div>
-
 <!-- ═══════════════ LEISURE ═══════════════ -->
 <div class="screen" id="leisure">
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Leisure</span><span></span></div>
@@ -735,11 +684,11 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       <div class="info-note" style="margin-top:12px;">Hot season = swim season. Schedule the day, not just the intention.</div>
       <div class="pad">
         <div class="sub-items" style="padding:0;">
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research pools / locations near Memphis</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find swim instructors / lessons</div><div class="sub-detail">Search for instructors near you</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find out cost / membership options</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Sign up / schedule first session</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Swam this week ✓</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research pools and locations near Memphis</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find swim instructors and lessons</div><div class="sub-detail">Search for instructors near you</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find out cost and membership options</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Sign up and schedule first session</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Swam this week</div></div></div>
         </div>
       </div>
     </div>
@@ -772,7 +721,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
     </div>
   </div>
 </div>
-
 <!-- ═══════════════ HOME & FAMILY ═══════════════ -->
 <div class="screen" id="homefamily">
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Home & Family</span><span></span></div>
@@ -855,7 +803,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
     </div>
   </div>
 </div>
-
 <!-- ═══════════════ AI COACH ═══════════════ -->
 <div class="screen" id="coach">
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title" style="color:var(--gold);">✦ AI Coach</span><span></span></div>
@@ -865,9 +812,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       <div class="domain-title">AI Coach</div>
       <div class="domain-subtitle" id="coachModeLabel">Loading...</div>
     </div>
-
     <div class="section-pad">
-      <!-- Domain context selector -->
       <div class="section-label">I'm in my</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
         <div class="ctx-tag" onclick="toggleCtx(this)" data-key="health">🌸 Health</div>
@@ -878,18 +823,15 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         <div class="ctx-tag" onclick="toggleCtx(this)" data-key="beauty">✨ Beauty</div>
         <div class="ctx-tag" onclick="toggleCtx(this)" data-key="family">👑 Family</div>
       </div>
-
       <div class="section-label" id="coachInputLabel">Tell me about your day</div>
       <div style="font-size:12px;color:var(--text);font-style:italic;margin-bottom:10px;" id="coachInputHint">Share what happened, how you felt, what you did or avoided. The more honest, the more useful.</div>
       <textarea id="coachInput" class="g-input" style="min-height:120px;" placeholder="Today I... I struggled with... I'm proud that... I'm worried about..."></textarea>
       <button onclick="getCoaching()" class="btn-gold">Get Coaching ✦</button>
     </div>
-
     <div id="coachLoading" style="display:none;padding:40px 20px;text-align:center;">
       <div style="font-size:32px;margin-bottom:16px;animation:pulse 1.5s infinite;">✦</div>
       <div style="font-size:13px;color:var(--text);font-style:italic;" id="coachLoadMsg">Reading your day...</div>
     </div>
-
     <div id="coachResponse" style="display:none;padding:0 20px 20px;">
       <div class="coach-response-wrap">
         <div id="coachText" style="font-size:14px;color:var(--cream);line-height:1.8;font-weight:400;white-space:pre-wrap;"></div>
@@ -897,14 +839,12 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       </div>
       <button onclick="clearCoach()" class="btn-ghost" style="margin-top:12px;">Start Over</button>
     </div>
-
     <div style="padding:0 20px 20px;">
       <div class="section-label">Past Sessions</div>
       <div id="coachHistory"></div>
     </div>
   </div>
 </div>
-
 <!-- ═══════════════ LIBRARY ═══════════════ -->
 <div class="screen" id="library">
   <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Library</span><span></span></div>
@@ -916,12 +856,8 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       <div class="tab-btn" onclick="libTab('homefam',this)">Home</div>
       <div class="tab-btn" onclick="libTab('leisure',this)">Leisure</div>
     </div>
-
-    <!-- ── SELF ── -->
     <div id="lib-self">
       <div class="phase-strip"><div class="phase-now">Your Inner World</div><div class="phase-name">Self — Mind · Body · Vision</div></div>
-
-      <!-- Vision Board -->
       <div class="pillar-list">
         <div class="pillar-card active-focus">
           <div class="pillar-header"><span class="pillar-name">🌟 Vision Board</span><span class="pillar-status">Your North Star</span></div>
@@ -933,22 +869,16 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
             <div><div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--lavender);margin-bottom:4px;font-weight:700;">Freedom & Life</div><textarea class="g-input" style="min-height:60px;font-size:13px;" placeholder="I travel freely, I live on my own terms..."></textarea></div>
           </div>
         </div>
-
-        <!-- Wins Log -->
         <div class="pillar-card active-focus">
           <div class="pillar-header"><span class="pillar-name">🏆 Wins Log</span><span class="pillar-status">Evidence of Becoming</span></div>
           <div class="pillar-desc">Record every victory — big and small. This is your proof when doubt shows up.</div>
           <div class="history-section" style="margin-top:8px;"><div class="history-label">Your Wins</div><div class="history-entries" id="log-wins"></div><div class="history-add-row"><input class="history-input" id="in-wins" placeholder="Held my ground during rounds today..."/><button class="history-btn" onclick="addLog('wins')">+</button></div></div>
         </div>
-
-        <!-- Gratitude Archive -->
         <div class="pillar-card active-focus">
           <div class="pillar-header"><span class="pillar-name">🤍 Gratitude Archive</span><span class="pillar-status">Your Blessings</span></div>
           <div class="pillar-desc">A running record of what you're grateful for. Scroll back when life feels heavy.</div>
           <div class="history-section" style="margin-top:8px;"><div class="history-label">Gratitude Entries</div><div class="history-entries" id="log-gratitude-archive"></div><div class="history-add-row"><input class="history-input" id="in-gratitude-archive" placeholder="Grateful for my kids, my health, this journey..."/><button class="history-btn" onclick="addLog('gratitude-archive')">+</button></div></div>
         </div>
-
-        <!-- 30-Day Mindset Plan -->
         <div class="pillar-card building">
           <div class="pillar-header"><span class="pillar-name">🧠 30-Day Sovereignty Plan</span><span class="pillar-status">Active — Month 1</span></div>
           <div class="pillar-desc">The goal is not another breakthrough. The goal is conditioning.</div>
@@ -973,39 +903,28 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
             </div>
           </div>
         </div>
-
-        <!-- Diet & Workout Plan -->
         <div class="pillar-card building">
           <div class="pillar-header"><span class="pillar-name">💪 Diet & Workout Plan</span><span class="pillar-status">Building</span></div>
           <div class="history-section" style="margin-top:0;"><div class="history-label">Plan, goals, progress</div><div class="history-entries" id="log-diet-plan"></div><div class="history-add-row"><input class="history-input" id="in-diet-plan" placeholder="Goal weight, workout schedule, meal plan..."/><button class="history-btn" onclick="addLog('diet-plan')">+</button></div></div>
         </div>
-
-        <!-- Appearance Plan -->
         <div class="pillar-card beauty">
           <div class="pillar-header"><span class="pillar-name">✨ Appearance Plan</span><span class="pillar-status">Becoming Her</span></div>
           <div class="history-section" style="margin-top:0;"><div class="history-label">Style goals, outfit inspo, glow-up milestones</div><div class="history-entries" id="log-appearance-plan"></div><div class="history-add-row"><input class="history-input" id="in-appearance-plan" placeholder="Soft glam routine locked in, hair schedule..."/><button class="history-btn" onclick="addLog('appearance-plan')">+</button></div></div>
         </div>
-
-        <!-- Medical Appointments -->
         <div class="pillar-card also-active">
           <div class="pillar-header"><span class="pillar-name">🩺 Medical & Beauty Appointments</span><span class="pillar-status">Track It</span></div>
           <div class="history-section" style="margin-top:0;"><div class="history-label">Appointments, procedures, follow-ups</div><div class="history-entries" id="log-medical"></div><div class="history-add-row"><input class="history-input" id="in-medical" placeholder="Vampire facial #1 — June 15, medspa confirmed..."/><button class="history-btn" onclick="addLog('medical')">+</button></div></div>
         </div>
       </div>
     </div>
-
-    <!-- ── CAREER ── -->
     <div id="lib-career" style="display:none;">
       <div class="phase-strip"><div class="phase-now">Building Your Empire</div><div class="phase-name">Career — NP · Real Estate · Digital</div></div>
-
       <div class="tab-row" style="margin:12px 20px 0;border:1px solid var(--border2);">
         <div class="tab-btn active" onclick="careerLibTab('neuro',this)">Neuro</div>
         <div class="tab-btn" onclick="careerLibTab('re',this)">Real Estate</div>
         <div class="tab-btn" onclick="careerLibTab('digital',this)">Digital</div>
         <div class="tab-btn" onclick="careerLibTab('finance',this)">Finance</div>
       </div>
-
-      <!-- Neuro -->
       <div id="clt-neuro">
         <div class="pillar-list">
           <div class="info-note">Two months in. Still standing. Add protocols as you learn them.</div>
@@ -1013,14 +932,12 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div class="pillar-card active-focus"><div class="pillar-header"><span class="pillar-name">Hemorrhage</span><span class="pillar-status">Active</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">Notes & Protocols</div><div class="history-entries" id="log-neuro-hem"></div><div class="history-add-row"><input class="history-input" id="in-neuro-hem" placeholder="ICH score, BP targets, EVD management..."/><button class="history-btn" onclick="addLog('neuro-hem')">+</button></div></div></div>
           <div class="pillar-card active-focus"><div class="pillar-header"><span class="pillar-name">Seizure</span><span class="pillar-status">Active</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">Notes & Protocols</div><div class="history-entries" id="log-neuro-sz"></div><div class="history-add-row"><input class="history-input" id="in-neuro-sz" placeholder="Status epilepticus protocol, AED ladder..."/><button class="history-btn" onclick="addLog('neuro-sz')">+</button></div></div></div>
           <div class="pillar-card active-focus"><div class="pillar-header"><span class="pillar-name">ICP Management</span><span class="pillar-status">Active</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">Notes & Protocols</div><div class="history-entries" id="log-neuro-icp"></div><div class="history-add-row"><input class="history-input" id="in-neuro-icp" placeholder="CPP targets, osmotherapy, herniation signs..."/><button class="history-btn" onclick="addLog('neuro-icp')">+</button></div></div></div>
-          <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">Case Library</span><span class="pillar-status">Building</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">Cases reviewed & lessons learned</div><div class="history-entries" id="log-cases"></div><div class="history-add-row"><input class="history-input" id="in-cases" placeholder="SAH case — key lesson was early EVD..."/><button class="history-btn" onclick="addLog('cases')">+</button></div></div></div>
+          <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">Case Library</span><span class="pillar-status">Building</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">Cases reviewed & lessons learned</div><div class="history-entries" id="log-lib-cases"></div><div class="history-add-row"><input class="history-input" id="in-lib-cases" placeholder="SAH case — key lesson was early EVD..."/><button class="history-btn" onclick="addLog('lib-cases')">+</button></div></div></div>
           <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">10x Career Research</span><span class="pillar-status">Future</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">Fellowships, specializations, opportunities</div><div class="history-entries" id="log-career-research"></div><div class="history-add-row"><input class="history-input" id="in-career-research" placeholder="NP fellowship programs, neuro certifications..."/><button class="history-btn" onclick="addLog('career-research')">+</button></div></div></div>
           <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">Pulmonary</span><span class="pillar-status">Phase 2</span></div></div>
           <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">Cardiac</span><span class="pillar-status">Phase 3</span></div></div>
         </div>
       </div>
-
-      <!-- Real Estate -->
       <div id="clt-re" style="display:none;">
         <div class="pillar-list">
           <div class="info-note">Duplex + midterm rental active. Pace Morby library available. Credit Suite resolving.</div>
@@ -1030,15 +947,11 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">Acquisition #3 Pipeline</span><span class="pillar-status">Queued</span></div><div class="pillar-desc">Next deal criteria, workflow, automation systems.</div></div>
         </div>
       </div>
-
-      <!-- Digital Products -->
       <div id="clt-digital" style="display:none;">
         <div class="pillar-list">
           <div class="pillar-card active-focus"><div class="pillar-header"><span class="pillar-name">Digital Products</span><span class="pillar-status">Building</span></div><div class="pillar-desc">Ideas, products in progress, launch plans.</div><div class="history-section" style="margin-top:8px;"><div class="history-label">Products, ideas, revenue</div><div class="history-entries" id="log-digital"></div><div class="history-add-row"><input class="history-input" id="in-digital" placeholder="NP study guide, Becoming OS template..."/><button class="history-btn" onclick="addLog('digital')">+</button></div></div></div>
         </div>
       </div>
-
-      <!-- Finance -->
       <div id="clt-finance" style="display:none;">
         <div class="pillar-list">
           <div class="pillar-card active-focus"><div class="pillar-header"><span class="pillar-name">Income Tracker</span><span class="pillar-status">Track Monthly</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">NP income, rental income, digital products</div><div class="history-entries" id="log-income"></div><div class="history-add-row"><input class="history-input" id="in-income" placeholder="May: NP $8,200 · Duplex $1,400 · Midterm $2,100..."/><button class="history-btn" onclick="addLog('income')">+</button></div></div></div>
@@ -1047,8 +960,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         </div>
       </div>
     </div>
-
-    <!-- ── HOME & FAMILY ── -->
     <div id="lib-homefam" style="display:none;">
       <div class="phase-strip"><div class="phase-now">Your Foundation</div><div class="phase-name">Home & Family Resources</div></div>
       <div class="pillar-list">
@@ -1059,8 +970,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">🛒 Shopping & Home Inventory</span><span class="pillar-status">Running List</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">Things to buy, things to replace</div><div class="history-entries" id="log-shopping"></div><div class="history-add-row"><input class="history-input" id="in-shopping" placeholder="Need: bathroom vanity, patio furniture, castor oil..."/><button class="history-btn" onclick="addLog('shopping')">+</button></div></div></div>
       </div>
     </div>
-
-    <!-- ── LEISURE ── -->
     <div id="lib-leisure" style="display:none;">
       <div class="phase-strip"><div class="phase-now">Your Joy</div><div class="phase-name">Leisure — Travel · Growth · Fun</div></div>
       <div class="pillar-list">
@@ -1070,12 +979,9 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">🌊 Swimming Progress</span><span class="pillar-status">Active Season</span></div><div class="history-section" style="margin-top:0;"><div class="history-label">Lessons, progress, pools found</div><div class="history-entries" id="log-swim"></div><div class="history-add-row"><input class="history-input" id="in-swim" placeholder="Found instructor at YMCA, first lesson June 3..."/><button class="history-btn" onclick="addLog('swim')">+</button></div></div></div>
       </div>
     </div>
-
   </div>
 </div>
-
 <script>
-// ── CORE ──
 function show(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   var el=document.getElementById(id);if(el)el.classList.add('active');
@@ -1083,15 +989,21 @@ function show(id){
   if(id==='home')initHomeFlow();
   if(id==='coach'){renderCoachHistory();initCoachMode();}
 }
-
 function showToast(msg){var t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
 function openReset(){document.getElementById('resetOverlay').classList.add('active');}
 function closeReset(){document.getElementById('resetOverlay').classList.remove('active');}
-function toggleCheck(item){var b=item.querySelector('.sub-check,.check-box');if(b)b.classList.toggle('done');}
+function toggleCheck(item){
+  var b=item.querySelector('.sub-check,.check-box');
+  var nameEl=item.querySelector('.sub-name');
+  if(b && b.classList.contains('sub-check') && nameEl){
+    var habitName=nameEl.textContent.trim();
+    openLogPopup(item,habitName);
+    return;
+  }
+  if(b)b.classList.toggle('done');
+}
 function toggleShop(item){var b=item.querySelector('.shop-check');if(b)b.classList.toggle('done');}
 function toggleRedesign(header){var d=header.parentElement.querySelector('.redesign-detail');var t=header.querySelector('.redesign-toggle');var open=d.style.display==='block';d.style.display=open?'none':'block';t.textContent=open?'+ expand':'− close';}
-
-// ── DATE ──
 function updateDate(){
   var d=new Date();
   var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1099,8 +1011,6 @@ function updateDate(){
   var el=document.getElementById('homeDate');
   if(el)el.textContent=days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate();
 }
-
-// ── HOME FLOW ──
 function showStep(step){
   ['gratitude','domains','priorities','planner','day','evening'].forEach(function(s){
     var el=document.getElementById('step-'+s);if(el)el.style.display='none';
@@ -1110,7 +1020,6 @@ function showStep(step){
   try{localStorage.setItem('currentStep',step);}catch(e){}
   window.scrollTo(0,0);
 }
-
 function initHomeFlow(){
   var today=new Date().toDateString();
   var lastDay='';try{lastDay=localStorage.getItem('flowDay')||'';}catch(e){}
@@ -1122,8 +1031,6 @@ function initHomeFlow(){
   showStep(saved);
   if(saved==='day'||saved==='evening')renderDayView();
 }
-
-var gratCount=0;
 function nextGrat(num){
   var input=document.getElementById('g'+num);
   if(!input||!input.value.trim()){input.focus();return;}
@@ -1144,7 +1051,6 @@ function nextGrat(num){
     showStep('domains');
   }
 }
-
 function completeMorning(){
   try{
     localStorage.setItem('p-career',document.getElementById('p-career').value);
@@ -1155,7 +1061,6 @@ function completeMorning(){
   showStep('day');
   renderDayView();
 }
-
 function renderDayView(){
   var hr=new Date().getHours();
   var isEvening=hr>=17;
@@ -1169,7 +1074,6 @@ function renderDayView(){
     if(label)label.textContent='Good Evening';
     if(eveningBtn){eveningBtn.textContent='Start Evening Reflection →';eveningBtn.style.background='var(--blush)';}
   }
-  // Glance summary
   var glance=document.getElementById('glanceSummary');
   if(glance){
     var items=[
@@ -1184,7 +1088,6 @@ function renderDayView(){
         +'<span style="font-size:13px;color:var(--cream);font-weight:500;">'+i.val+'</span></div>';
     }).join('')||'<div style="font-size:12px;color:var(--text2);font-style:italic;">No priorities set yet</div>';
   }
-  // Morning summary
   var summary=document.getElementById('morningSummary');
   if(summary){
     var g1=localStorage.getItem('grat1')||'';var g2=localStorage.getItem('grat2')||'';var g3=localStorage.getItem('grat3')||'';
@@ -1195,8 +1098,6 @@ function renderDayView(){
     summary.innerHTML=html||'';
   }
 }
-
-// ── PLANNER ──
 function buildPlanner(){
   var slots=document.getElementById('plannerSlots');if(!slots)return;
   var hours=[];for(var i=6;i<=22;i++){hours.push(i);}
@@ -1210,10 +1111,7 @@ function buildPlanner(){
       +'<input class="'+cls+'" data-hour="'+h+'" value="'+val.replace(/"/g,'&quot;')+'" placeholder="..." oninput="savePlan('+h+',this.value)" onfocus="this.classList.remove(\'prefilled\')" /></div>';
   }).join('');
 }
-
 function savePlan(h,val){try{localStorage.setItem('plan-'+h,val);}catch(e){}}
-
-// ── METRICS ──
 var metricsTouched={};
 function checkMetrics(){
   document.querySelectorAll('.metric-slider[data-metric]').forEach(function(s){metricsTouched[s.getAttribute('data-metric')]=true;});
@@ -1224,8 +1122,6 @@ function checkMetrics(){
     setTimeout(function(){if(r)r.scrollIntoView({behavior:'smooth',block:'start'});},300);
   }
 }
-
-// ── SAVE DAY ──
 function saveDay(){
   var today=new Date().toDateString();
   var days=[];try{days=JSON.parse(localStorage.getItem('streakDays')||'[]');}catch(e){}
@@ -1238,8 +1134,6 @@ function saveDay(){
   showToast('Day locked in 🔥 Rest now.');
   setTimeout(function(){showStep('day');renderDayView();},1500);
 }
-
-// ── CESSATION ──
 var cessStart=null;
 try{var cs=localStorage.getItem('cessStart');if(cs)cessStart=new Date(cs);}catch(e){}
 function updateCessation(){
@@ -1258,8 +1152,6 @@ function updateCessation(){
 }
 function startCessation(){if(confirm('Start your smoke-free clock from right now?')){cessStart=new Date();try{localStorage.setItem('cessStart',cessStart.toISOString());}catch(e){}updateCessation();}}
 function logCig(){if(confirm('Logging one — no shame. Name the trigger, use the reset next time. Restart the clock?')){cessStart=new Date();try{localStorage.setItem('cessStart',cessStart.toISOString());}catch(e){}updateCessation();}}
-
-// ── LOGS ──
 function getLogs(key){try{return JSON.parse(localStorage.getItem('log_'+key)||'[]');}catch(e){return[];}}
 function saveLogs(key,logs){try{localStorage.setItem('log_'+key,JSON.stringify(logs));}catch(e){}}
 function renderLogs(key){
@@ -1280,10 +1172,8 @@ function addLog(key){
 function deleteLog(key,i){var logs=getLogs(key);logs.splice(i,1);saveLogs(key,logs);renderLogs(key);}
 var currentCoachUrl='';
 function openClaude(){if(currentCoachUrl)window.open(currentCoachUrl,'_blank');}
-var allLogKeys=['sovereignty','cessation','diet','appearance','beauty','beauty-notes','neuro','cases','pm','credit','pace','leisure-notes','home-notes','neuro-stroke','neuro-hem','neuro-sz','neuro-icp','design-back','design-int','lib-pace','lib-deals','wins','gratitude-archive','diet-plan','appearance-plan','medical','career-research','digital','income','networth','savings','kids-resources','memories','shopping','trips','bucket','content','swim','pm-notes'];
+var allLogKeys=['sovereignty','cessation','diet','appearance','beauty','beauty-notes','neuro','cases','pm','credit','pace','leisure-notes','home-notes','neuro-stroke','neuro-hem','neuro-sz','neuro-icp','design-back','design-int','lib-pace','lib-deals','lib-cases','wins','gratitude-archive','diet-plan','appearance-plan','medical','career-research','digital','income','networth','savings','kids-resources','memories','shopping','trips','bucket','content','swim','pm-notes'];
 function initAllLogs(){allLogKeys.forEach(renderLogs);}
-
-// ── DAY TRACKER ──
 function initDayTracker(){
   var grid=document.getElementById('dayGrid');if(!grid)return;
   var checked=[];try{checked=JSON.parse(localStorage.getItem('days30')||'[]');}catch(e){}
@@ -1299,8 +1189,6 @@ function initDayTracker(){
   if(bar)bar.style.width=Math.round((checked.length/30)*100)+'%';
   if(pct)pct.textContent=checked.length+' / 30 days';
 }
-
-// ── TABS ──
 function healthTab(t,el){['sovereignty','body','beauty'].forEach(function(x){var e=document.getElementById('ht-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#health .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function beautyTab(t,el){['phase1','phase2','phase3','shopping'].forEach(function(x){var e=document.getElementById('bt-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#ht-beauty .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function careerTab(t,el){document.getElementById('c-neuro').style.display=t==='neuro'?'block':'none';document.getElementById('c-re').style.display=t==='re'?'block':'none';document.querySelectorAll('#career .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
@@ -1308,8 +1196,6 @@ function leisureTab(t,el){['now','next','all','notes'].forEach(function(x){var e
 function homeTab(t,el){['home','kids','adult','notes'].forEach(function(x){var e=document.getElementById('h-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#homefamily .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function libTab(t,el){['self','career','homefam','leisure'].forEach(function(x){var e=document.getElementById('lib-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#library .tab-row:first-of-type .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function careerLibTab(t,el){['neuro','re','digital','finance'].forEach(function(x){var e=document.getElementById('clt-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#lib-career .tab-row .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
-
-// ── AI COACH ──
 function initCoachMode(){
   var hr=new Date().getHours();var isMorning=hr<12;
   var lbl=document.getElementById('coachModeLabel');var inputLbl=document.getElementById('coachInputLabel');var hint=document.getElementById('coachInputHint');var input=document.getElementById('coachInput');
@@ -1369,40 +1255,11 @@ function getCoaching(){
 function clearCoach(){document.getElementById('coachInput').value='';document.getElementById('coachResponse').style.display='none';document.querySelectorAll('.ctx-tag.active').forEach(function(t){t.classList.remove('active');});}
 function renderCoachHistory(){var container=document.getElementById('coachHistory');if(!container)return;var history=[];try{history=JSON.parse(localStorage.getItem('coachHistory')||'[]');}catch(e){}if(history.length===0){container.innerHTML='<div style="font-size:12px;color:var(--text2);font-style:italic;">No sessions yet — tap Get Coaching to start</div>';return;}container.innerHTML=history.map(function(h,i){return '<div style="background:var(--surface);border:1px solid var(--border);padding:14px;margin-bottom:6px;"><div style="font-size:9px;color:var(--gold);letter-spacing:.15em;margin-bottom:4px;font-weight:700;">'+h.date+'</div><div style="font-size:12px;color:var(--text);font-style:italic;margin-bottom:8px;">'+h.input+'</div><button onclick="reopenSession('+i+')" style="all:unset;cursor:pointer;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:700;">Reopen in Claude →</button></div>';}).join('');}
 function reopenSession(i){var history=[];try{history=JSON.parse(localStorage.getItem('coachHistory')||'[]');}catch(e){}if(history[i]&&history[i].response){var el=document.getElementById('hist-resp-'+i);if(el)el.style.display=el.style.display==='none'?'block':'none';}}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ── STREAK ──
 function initStreak(){
   var sd=[];try{sd=JSON.parse(localStorage.getItem('streakDays')||'[]');}catch(e){}
   var s=0;var dd=new Date();while(sd.indexOf(dd.toDateString())!==-1){s++;dd.setDate(dd.getDate()-1);}
   var el=document.getElementById('streakCount');if(el)el.textContent=s;
 }
-
-// ── INIT ──
-updateDate();
-updateCessation();
-loadSavedGoals();
-setInterval(updateCessation,1000);
-initAllLogs();
-initDayTracker();
-initStreak();
-initHomeFlow();
-buildPlanner();
-
-// ── LONG PRESS TO EDIT GOALS ──
 var holdTimer=null;var holdTarget=null;
 function startHold(el){
   holdTarget=el;
@@ -1418,11 +1275,7 @@ function startHold(el){
     }
   },2000);
 }
-function endHold(){
-  if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}
-}
-
-// ── LOAD SAVED GOALS ──
+function endHold(){if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}}
 function loadSavedGoals(){
   document.querySelectorAll('[data-key]').forEach(function(el){
     var key=el.getAttribute('data-key');
@@ -1430,8 +1283,6 @@ function loadSavedGoals(){
     if(saved)el.textContent=saved;
   });
 }
-
-// ── EXPORT BACKUP ──
 function exportData(){
   var data={};
   for(var i=0;i<localStorage.length;i++){
@@ -1447,8 +1298,6 @@ function exportData(){
   URL.revokeObjectURL(url);
   showToast('Backup downloaded ✓');
 }
-
-// ── IMPORT BACKUP ──
 function importData(){
   var input=document.createElement('input');
   input.type='file';input.accept='.json';
@@ -1467,7 +1316,96 @@ function importData(){
   };
   input.click();
 }
-
+// ── PROGRESS LOG POPUP ──
+var _popupItem=null;var _popupKey=null;
+function openLogPopup(item,habitName){
+  _popupItem=item;
+  var key='sublog_'+habitName.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  _popupKey=key;
+  var b=item.querySelector('.sub-check');
+  if(b&&!b.classList.contains('done'))b.classList.add('done');
+  var habitEl=document.getElementById('logPopupHabit');
+  if(habitEl)habitEl.textContent=habitName;
+  var dateEl=document.getElementById('logPopupDate');
+  if(dateEl){
+    var now=new Date();
+    dateEl.textContent=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getDay()]+' · '+(now.getMonth()+1)+'/'+now.getDate();
+  }
+  var ta=document.getElementById('logPopupTextarea');
+  if(ta)ta.value='';
+  renderPopupEntries(key);
+  var overlay=document.getElementById('logPopupOverlay');
+  if(overlay)overlay.classList.add('active');
+  setTimeout(function(){if(ta)ta.focus();},350);
+}
+function renderPopupEntries(key){
+  var container=document.getElementById('logPopupEntries');if(!container)return;
+  var logs=[];try{logs=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  if(logs.length===0){
+    container.innerHTML='<div class="log-popup-empty">No entries yet — add your first note below</div>';
+    return;
+  }
+  container.innerHTML=logs.map(function(l,i){
+    return '<div class="log-popup-entry">'
+      +'<span class="log-popup-entry-date">'+l.date+'</span>'
+      +'<span class="log-popup-entry-text">'+l.text+'</span>'
+      +'<span class="log-popup-entry-del" onclick="deletePopupEntry(\''+key+'\','+i+')">×</span>'
+      +'</div>';
+  }).join('');
+  container.scrollTop=container.scrollHeight;
+}
+function deletePopupEntry(key,i){
+  var logs=[];try{logs=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  logs.splice(i,1);
+  try{localStorage.setItem(key,JSON.stringify(logs));}catch(e){}
+  renderPopupEntries(key);
+  updateLogDot(_popupItem,key);
+}
+function saveLogEntry(){
+  var ta=document.getElementById('logPopupTextarea');
+  if(!ta||!ta.value.trim()){ta.focus();return;}
+  var logs=[];try{logs=JSON.parse(localStorage.getItem(_popupKey)||'[]');}catch(e){}
+  var now=new Date();
+  var date=(now.getMonth()+1)+'/'+now.getDate()+' '+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  logs.push({date:date,text:ta.value.trim()});
+  try{localStorage.setItem(_popupKey,JSON.stringify(logs));}catch(e){}
+  ta.value='';
+  renderPopupEntries(_popupKey);
+  updateLogDot(_popupItem,_popupKey);
+  showToast('Entry saved ✓');
+}
+function updateLogDot(item,key){
+  if(!item)return;
+  var b=item.querySelector('.sub-check');if(!b)return;
+  var logs=[];try{logs=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  if(logs.length>0)b.classList.add('has-log');else b.classList.remove('has-log');
+}
+function closeLogPopup(event){
+  if(event&&event.target!==document.getElementById('logPopupOverlay'))return;
+  document.getElementById('logPopupOverlay').classList.remove('active');
+}
+function forceCloseLogPopup(){
+  document.getElementById('logPopupOverlay').classList.remove('active');
+}
+function initLogDots(){
+  document.querySelectorAll('.sub-item').forEach(function(item){
+    var nameEl=item.querySelector('.sub-name');if(!nameEl)return;
+    var habitName=nameEl.textContent.trim();
+    var key='sublog_'+habitName.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    var logs=[];try{logs=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+    if(logs.length>0){var b=item.querySelector('.sub-check');if(b)b.classList.add('has-log');}
+  });
+}
+updateDate();
+updateCessation();
+loadSavedGoals();
+setInterval(updateCessation,1000);
+initAllLogs();
+initDayTracker();
+initStreak();
+initHomeFlow();
+buildPlanner();
+initLogDots();
 </script>
 </body>
 </html>
