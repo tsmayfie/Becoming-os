@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -243,6 +244,48 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .log-popup-done{all:unset;cursor:pointer;border:1px solid var(--border2);color:var(--text);padding:14px 18px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;text-align:center;}
 .log-popup-done:active{border-color:var(--gold);color:var(--gold);}
 .log-popup-empty{font-size:11px;color:var(--text2);font-style:italic;padding:4px 0 8px;}
+
+/* ── DOMAIN CAROUSEL ── */
+.domain-carousel-wrap{position:relative;overflow:hidden;touch-action:pan-y;width:100%;}
+.domain-carousel-track{display:flex;transition:transform .38s cubic-bezier(.4,0,.2,1);will-change:transform;width:100%;}
+.domain-carousel-slide{min-width:100%;padding:0 20px 32px;box-sizing:border-box;}
+.carousel-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 8px;}
+.carousel-arrow{all:unset;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border2);color:var(--gold);font-size:18px;transition:all .2s;}
+.carousel-arrow:active{background:var(--gold-dim);}
+.carousel-arrow:disabled{opacity:.25;pointer-events:none;}
+.carousel-dots{display:flex;gap:6px;align-items:center;}
+.carousel-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:all .25s;cursor:pointer;}
+.carousel-dot.active{background:var(--gold);width:18px;border-radius:3px;}
+.carousel-domain-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text);font-weight:600;}
+.carousel-card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--border2);padding:28px 22px 22px;cursor:pointer;position:relative;margin-bottom:8px;transition:all .15s;}
+.carousel-card:active{transform:scale(.98);}
+.cc-health{border-top-color:var(--blush);}
+.cc-career{border-top-color:var(--gold);}
+.cc-leisure{border-top-color:var(--sage);}
+.cc-home{border-top-color:var(--lavender);}
+.cc-icons{font-size:30px;margin-bottom:14px;line-height:1;}
+.cc-name{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--cream);margin-bottom:4px;}
+.cc-sub{font-size:13px;color:var(--text);line-height:1.5;font-weight:400;margin-bottom:16px;}
+.cc-enter{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);font-weight:700;padding:10px 18px;border:1px solid var(--gold2);background:var(--gold-dim);}
+.carousel-hint{text-align:center;font-size:10px;color:var(--text2);letter-spacing:.15em;text-transform:uppercase;padding:6px 0 4px;font-weight:500;}
+
+/* ── BOTTOM DOCK ── */
+.bottom-dock{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:10px 8px 22px;z-index:150;}
+.dock-btn{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;padding:4px 2px;transition:opacity .15s;}
+.dock-btn:active{opacity:.6;}
+.dock-icon{font-size:20px;line-height:1;}
+.dock-label{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--text);font-weight:600;}
+.dock-btn.active-dock .dock-label{color:var(--gold);}
+
+/* ── DOCK SHEET OVERLAY ── */
+.dock-sheet-overlay{display:none;position:fixed;inset:0;background:rgba(10,8,6,.88);z-index:500;align-items:flex-end;}
+.dock-sheet-overlay.active{display:flex;}
+.dock-sheet{background:var(--surface);border-top:2px solid var(--gold);width:100%;max-width:480px;margin:0 auto;max-height:90vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.16,1,.3,1) forwards;}
+.dock-sheet-handle{width:36px;height:3px;background:var(--border2);border-radius:2px;margin:14px auto 0;}
+.dock-sheet-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.dock-sheet-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--cream);}
+.dock-sheet-close{all:unset;cursor:pointer;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text);padding:6px;}
+.dock-sheet-body{padding:18px 20px 100px;}
 </style>
 </head>
 <body>
@@ -280,6 +323,115 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
   </div>
 </div>
 <div class="fab" onclick="openReset()">↺</div>
+
+<!-- ═══════════════ BOTTOM DOCK ═══════════════ -->
+<div class="bottom-dock" id="bottomDock">
+  <button class="dock-btn" onclick="openDockSheet('gratitude')" id="dock-gratitude">
+    <span class="dock-icon">🤍</span>
+    <span class="dock-label">Gratitude</span>
+  </button>
+  <button class="dock-btn" onclick="openDockSheet('priorities')" id="dock-priorities">
+    <span class="dock-icon">🎯</span>
+    <span class="dock-label">Priorities</span>
+  </button>
+  <button class="dock-btn" onclick="openDockSheet('planner')" id="dock-planner">
+    <span class="dock-icon">📅</span>
+    <span class="dock-label">Planner</span>
+  </button>
+  <button class="dock-btn" onclick="openDockSheet('coach')" id="dock-coach">
+    <span class="dock-icon">💫</span>
+    <span class="dock-label">AI Coach</span>
+  </button>
+</div>
+
+<!-- Gratitude Sheet -->
+<div class="dock-sheet-overlay" id="dockSheet-gratitude" onclick="closeDockSheetOutside(event,'gratitude')">
+  <div class="dock-sheet">
+    <div class="dock-sheet-handle"></div>
+    <div class="dock-sheet-header">
+      <div class="dock-sheet-title">Gratitude 🤍</div>
+      <button class="dock-sheet-close" onclick="closeDockSheet('gratitude')">Done</button>
+    </div>
+    <div class="dock-sheet-body">
+      <div class="grat-copy" style="margin-bottom:16px;">What are you grateful for today?</div>
+      <div id="dockGrat1done" class="grat-done-item" style="display:none;"></div>
+      <div id="dockGrat2done" class="grat-done-item" style="display:none;"></div>
+      <div id="dock-grat-step1">
+        <input class="g-input" id="dg1" placeholder="I'm grateful for..." style="text-align:center;" />
+        <button class="btn-gold" onclick="dockNextGrat(1)">Next →</button>
+      </div>
+      <div id="dock-grat-step2" style="display:none;">
+        <input class="g-input" id="dg2" placeholder="And another thing..." style="text-align:center;" />
+        <button class="btn-gold" onclick="dockNextGrat(2)">One more →</button>
+      </div>
+      <div id="dock-grat-step3" style="display:none;">
+        <input class="g-input" id="dg3" placeholder="One more..." style="text-align:center;" />
+        <button class="btn-gold" onclick="dockNextGrat(3)">Save ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Priorities Sheet -->
+<div class="dock-sheet-overlay" id="dockSheet-priorities" onclick="closeDockSheetOutside(event,'priorities')">
+  <div class="dock-sheet">
+    <div class="dock-sheet-handle"></div>
+    <div class="dock-sheet-header">
+      <div class="dock-sheet-title">Today's Priorities 🎯</div>
+      <button class="dock-sheet-close" onclick="saveDockPriorities()">Save ✓</button>
+    </div>
+    <div class="dock-sheet-body">
+      <div class="flow-sub" style="margin-bottom:18px;">One per domain. Optional — but intentional.</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div><div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-weight:700;">Career</div><input class="g-input" id="dp-career" placeholder="One career move today..." style="margin:0;" /></div>
+        <div><div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--blush);margin-bottom:6px;font-weight:700;">Self</div><input class="g-input" id="dp-self" placeholder="One thing for you today..." style="margin:0;" /></div>
+        <div><div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--lavender);margin-bottom:6px;font-weight:700;">Home &amp; Family</div><input class="g-input" id="dp-home" placeholder="One home or family intention..." style="margin:0;" /></div>
+        <div><div style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--sage);margin-bottom:6px;font-weight:700;">Leisure</div><input class="g-input" id="dp-leisure" placeholder="One joy or rest intention..." style="margin:0;" /></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Planner Sheet -->
+<div class="dock-sheet-overlay" id="dockSheet-planner" onclick="closeDockSheetOutside(event,'planner')">
+  <div class="dock-sheet">
+    <div class="dock-sheet-handle"></div>
+    <div class="dock-sheet-header">
+      <div class="dock-sheet-title">Daily Planner 📅</div>
+      <button class="dock-sheet-close" onclick="closeDockSheet('planner')">Done</button>
+    </div>
+    <div class="dock-sheet-body" style="padding-top:10px;">
+      <div id="dockPlannerSlots"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Coach Sheet -->
+<div class="dock-sheet-overlay" id="dockSheet-coach" onclick="closeDockSheetOutside(event,'coach')">
+  <div class="dock-sheet">
+    <div class="dock-sheet-handle"></div>
+    <div class="dock-sheet-header">
+      <div class="dock-sheet-title">AI Coach 💫</div>
+      <button class="dock-sheet-close" onclick="closeDockSheet('coach')">Done</button>
+    </div>
+    <div class="dock-sheet-body">
+      <div style="font-size:11px;color:var(--text);margin-bottom:14px;font-style:italic;">What do you need right now?</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+        <span class="ctx-tag" onclick="dockSetCoachCtx('morning',this)">Morning focus</span>
+        <span class="ctx-tag" onclick="dockSetCoachCtx('stuck',this)">I'm stuck</span>
+        <span class="ctx-tag" onclick="dockSetCoachCtx('triggered',this)">I'm triggered</span>
+        <span class="ctx-tag" onclick="dockSetCoachCtx('evening',this)">Evening review</span>
+        <span class="ctx-tag" onclick="dockSetCoachCtx('custom',this)">Custom</span>
+      </div>
+      <textarea class="g-input" id="dockCoachInput" placeholder="What's on your mind?" style="min-height:90px;"></textarea>
+      <button class="btn-gold" onclick="dockAskCoach()" style="margin-top:10px;">Ask My Coach →</button>
+      <div id="dockCoachResponse" style="display:none;" class="coach-response-wrap">
+        <div class="coach-text" id="dockCoachText"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ HOME ═══════════════ -->
 <div class="screen active" id="home">
   <div class="home-hero">
@@ -327,19 +479,61 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       </div>
     </div>
     <div id="step-domains" class="flow-step" style="display:none;">
-      <div class="section-pad" style="padding-bottom:12px;">
+      <div class="section-pad" style="padding-bottom:8px;">
         <div class="flow-label">Morning · Step 2</div>
         <div class="flow-title">Your <em>World</em></div>
-        <div class="flow-sub">Review what's active. Tap into any domain anytime.</div>
+        <div class="flow-sub">Scroll through your domains. Tap to dive in.</div>
       </div>
-      <div class="domain-grid">
-        <div class="domain-tile d-health" onclick="show('health')"><div class="tile-icons">🧘🏾‍♀️✨🌸</div><div class="tile-name">Health</div><div class="tile-sub">Mind · Body · Soul</div><div class="tile-arrow">→</div></div>
-        <div class="domain-tile d-career" onclick="show('career')"><div class="tile-icons">👩🏾‍⚕️🩺💼</div><div class="tile-name">Career</div><div class="tile-sub">NP · Expert · Builder</div><div class="tile-arrow">→</div></div>
-        <div class="domain-tile d-leisure" onclick="show('leisure')"><div class="tile-icons">🦋🌺☀️✈️</div><div class="tile-name">Leisure</div><div class="tile-sub">Joy · Freedom · Adventure</div><div class="tile-arrow">→</div></div>
-        <div class="domain-tile d-home" onclick="show('homefamily')"><div class="tile-icons">👑🕯️🌙🤍</div><div class="tile-name">Home & Family</div><div class="tile-sub">Queen · Warmth · Love</div><div class="tile-arrow">→</div></div>
-        <div class="domain-tile d-coach full-width" onclick="show('coach')"><div class="tile-icons">💫🔮✨</div><div style="flex:1;"><div class="tile-name">AI Coach</div><div class="tile-sub">Feedback · Blind spots · Next action</div></div><div class="tile-arrow" style="position:static;">→</div></div>
-        <div class="domain-tile d-library full-width" onclick="show('library')"><div class="tile-icons">💡📖</div><div style="flex:1;"><div class="tile-name">Library</div><div class="tile-sub">30-Day Plan · Neuro · Design · Real Estate</div></div><div class="tile-arrow" style="position:static;">→</div></div>
+      <!-- Carousel nav -->
+      <div class="carousel-nav">
+        <button class="carousel-arrow" id="carouselPrev" onclick="carouselMove(-1)" disabled>←</button>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+          <div class="carousel-dots" id="carouselDots"></div>
+          <div class="carousel-domain-label" id="carouselLabel">Health</div>
+        </div>
+        <button class="carousel-arrow" id="carouselNext" onclick="carouselMove(1)">→</button>
       </div>
+      <div class="domain-carousel-wrap" id="carouselWrap">
+        <div class="domain-carousel-track" id="carouselTrack">
+          <!-- Health -->
+          <div class="domain-carousel-slide">
+            <div class="carousel-card cc-health" onclick="show('health')">
+              <div class="cc-icons">🧘🏾‍♀️✨🌸</div>
+              <div class="cc-name">Health</div>
+              <div class="cc-sub">Mind · Body · Soul<br>Sovereignty · Smoke-Free · Appearance</div>
+              <div class="cc-enter">Enter Domain →</div>
+            </div>
+          </div>
+          <!-- Career -->
+          <div class="domain-carousel-slide">
+            <div class="carousel-card cc-career" onclick="show('career')">
+              <div class="cc-icons">👩🏾‍⚕️🩺💼</div>
+              <div class="cc-name">Career</div>
+              <div class="cc-sub">NP · Expert · Builder<br>Neuro ICU · Real Estate · Empire</div>
+              <div class="cc-enter">Enter Domain →</div>
+            </div>
+          </div>
+          <!-- Leisure -->
+          <div class="domain-carousel-slide">
+            <div class="carousel-card cc-leisure" onclick="show('leisure')">
+              <div class="cc-icons">🦋🌺☀️✈️</div>
+              <div class="cc-name">Leisure</div>
+              <div class="cc-sub">Joy · Freedom · Adventure<br>Swimming · Travel · Growth</div>
+              <div class="cc-enter">Enter Domain →</div>
+            </div>
+          </div>
+          <!-- Home & Family -->
+          <div class="domain-carousel-slide">
+            <div class="carousel-card cc-home" onclick="show('homefamily')">
+              <div class="cc-icons">👑🕯️🌙🤍</div>
+              <div class="cc-name">Home &amp; Family</div>
+              <div class="cc-sub">Queen · Warmth · Love<br>Foundation · Legacy · Connection</div>
+              <div class="cc-enter">Enter Domain →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-hint">← swipe to explore →</div>
       <div class="pad mt"><button class="btn-gold" onclick="showStep('priorities')">Set My Priorities →</button></div>
     </div>
     <div id="step-priorities" class="flow-step" style="display:none;">
@@ -376,6 +570,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         </div>
         <div style="margin-top:12px;"><div class="section-label">This Morning</div><div id="morningSummary"></div></div>
         <button class="btn-gold" onclick="showStep('domains')" style="margin-top:20px;">↗ My Domains</button>
+        <button class="btn-ghost" onclick="showStep('domains')" style="margin-top:8px;">← Back to Domain Carousel</button>
         <button class="btn-ghost" onclick="showStep('evening')" id="eveningBtn">Evening Reflection</button>
       </div>
     </div>
@@ -1018,6 +1213,7 @@ function showStep(step){
   if(target){target.style.display='block';target.style.animation='none';void target.offsetWidth;target.style.animation='fadeUp .4s ease forwards';}
   try{localStorage.setItem('currentStep',step);}catch(e){}
   window.scrollTo(0,0);
+  if(step==='domains'){setTimeout(initCarousel,50);}
 }
 function initHomeFlow(){
   var today=new Date().toDateString();
@@ -1405,6 +1601,143 @@ initStreak();
 initHomeFlow();
 buildPlanner();
 initLogDots();
+
+// ── CAROUSEL ──
+var carouselIndex=0;
+var carouselDomains=['Health','Career','Leisure','Home & Family'];
+function initCarousel(){
+  var dotsEl=document.getElementById('carouselDots');
+  if(!dotsEl)return;
+  dotsEl.innerHTML=carouselDomains.map(function(_,i){
+    return '<div class="carousel-dot'+(i===0?' active':'')+'" onclick="carouselGo('+i+')"></div>';
+  }).join('');
+  carouselGo(0);
+  var wrap=document.getElementById('carouselWrap');
+  if(wrap){
+    var startX=0;
+    wrap.addEventListener('touchstart',function(e){startX=e.touches[0].clientX;},{passive:true});
+    wrap.addEventListener('touchend',function(e){
+      var dx=e.changedTouches[0].clientX-startX;
+      if(Math.abs(dx)>40){carouselMove(dx>0?-1:1);}
+    },{passive:true});
+  }
+}
+function carouselGo(idx){
+  var slides=document.querySelectorAll('.domain-carousel-slide');
+  if(idx<0)idx=0;if(idx>=slides.length)idx=slides.length-1;
+  carouselIndex=idx;
+  var track=document.getElementById('carouselTrack');
+  if(track)track.style.transform='translateX(-'+idx*100+'%)';
+  var dots=document.querySelectorAll('#carouselDots .carousel-dot');
+  dots.forEach(function(d,i){d.classList.toggle('active',i===idx);});
+  var lbl=document.getElementById('carouselLabel');
+  if(lbl)lbl.textContent=carouselDomains[idx];
+  var prev=document.getElementById('carouselPrev');var next=document.getElementById('carouselNext');
+  if(prev)prev.disabled=(idx===0);
+  if(next)next.disabled=(idx===slides.length-1);
+}
+function carouselMove(dir){carouselGo(carouselIndex+dir);}
+
+// ── BOTTOM DOCK SHEETS ──
+function openDockSheet(name){
+  document.querySelectorAll('.dock-sheet-overlay').forEach(function(o){o.classList.remove('active');});
+  var el=document.getElementById('dockSheet-'+name);
+  if(el)el.classList.add('active');
+  if(name==='planner')buildDockPlanner();
+  if(name==='priorities')loadDockPriorities();
+  if(name==='gratitude')resetDockGratitude();
+  document.querySelectorAll('.dock-btn').forEach(function(b){b.classList.remove('active-dock');});
+  var btn=document.getElementById('dock-'+name);
+  if(btn)btn.classList.add('active-dock');
+}
+function closeDockSheet(name){
+  var el=document.getElementById('dockSheet-'+name);
+  if(el)el.classList.remove('active');
+  document.querySelectorAll('.dock-btn').forEach(function(b){b.classList.remove('active-dock');});
+}
+function closeDockSheetOutside(event,name){
+  if(event.target===document.getElementById('dockSheet-'+name))closeDockSheet(name);
+}
+function resetDockGratitude(){
+  ['dock-grat-step1','dock-grat-step2','dock-grat-step3'].forEach(function(id,i){
+    var el=document.getElementById(id);if(el)el.style.display=i===0?'block':'none';
+  });
+  ['dockGrat1done','dockGrat2done'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+  ['dg1','dg2','dg3'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+}
+function dockNextGrat(num){
+  var input=document.getElementById('dg'+num);
+  if(!input||!input.value.trim()){input.focus();return;}
+  try{localStorage.setItem('grat'+num,input.value.trim());}catch(e){}
+  if(num===1){
+    var d=document.getElementById('dockGrat1done');if(d){d.textContent='✓ '+input.value.trim();d.style.display='block';}
+    document.getElementById('dock-grat-step1').style.display='none';
+    document.getElementById('dock-grat-step2').style.display='block';
+    document.getElementById('dg2').focus();
+  } else if(num===2){
+    var d=document.getElementById('dockGrat2done');if(d){d.textContent='✓ '+input.value.trim();d.style.display='block';}
+    document.getElementById('dock-grat-step2').style.display='none';
+    document.getElementById('dock-grat-step3').style.display='block';
+    document.getElementById('dg3').focus();
+  } else {
+    showToast('Gratitude saved \u2764');
+    closeDockSheet('gratitude');
+  }
+}
+function loadDockPriorities(){
+  ['career','self','home','leisure'].forEach(function(k){
+    var el=document.getElementById('dp-'+k);
+    if(el){var saved='';try{saved=localStorage.getItem('p-'+k)||'';}catch(e){}el.value=saved;}
+  });
+}
+function saveDockPriorities(){
+  ['career','self','home','leisure'].forEach(function(k){
+    var el=document.getElementById('dp-'+k);
+    if(el){try{localStorage.setItem('p-'+k,el.value);}catch(e){}}
+  });
+  showToast('Priorities saved \u2713');
+  closeDockSheet('priorities');
+}
+function buildDockPlanner(){
+  var slots=document.getElementById('dockPlannerSlots');if(!slots)return;
+  var hours=[];for(var i=6;i<=22;i++){hours.push(i);}
+  slots.innerHTML=hours.map(function(h){
+    var label=(h<12?h+':00 AM':(h===12?'12:00 PM':((h-12)+':00 PM')));
+    var prefilled=h===6?'Morning OS \u2014 gratitude, priorities, intentions':'';
+    var saved='';try{saved=localStorage.getItem('plan-'+h)||'';}catch(e){}
+    var val=saved||prefilled;
+    var cls=prefilled&&!saved?'planner-input prefilled':'planner-input';
+    return '<div class="planner-slot"><div class="planner-time">'+label+'</div>'
+      +'<input class="'+cls+'" value="'+val.replace(/"/g,'&quot;')+'" placeholder="..." oninput="savePlan('+h+',this.value)" onfocus="this.classList.remove('prefilled')" /></div>';
+  }).join('');
+}
+var dockCoachCtxVal='morning';
+function dockSetCoachCtx(ctx,el){
+  dockCoachCtxVal=ctx;
+  document.querySelectorAll('#dockSheet-coach .ctx-tag').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  var prompts={morning:'What do you want to lock in before the world gets loud?',stuck:"Describe where you're stuck \u2014 be specific.",triggered:'What happened? Walk me through it.',evening:'How did today go? What held, what slipped?',custom:"What's on your mind?"};
+  var input=document.getElementById('dockCoachInput');
+  if(input)input.placeholder=prompts[ctx]||"What's on your mind?";
+}
+function dockAskCoach(){
+  var input=document.getElementById('dockCoachInput');
+  if(!input||!input.value.trim()){input.focus();return;}
+  var resp=document.getElementById('dockCoachResponse');
+  var text=document.getElementById('dockCoachText');
+  if(resp)resp.style.display='block';
+  if(text)text.textContent='Thinking...';
+  var userMsg=input.value.trim();
+  var g1='';var g2='';var g3='';
+  try{g1=localStorage.getItem('grat1')||'';g2=localStorage.getItem('grat2')||'';g3=localStorage.getItem('grat3')||'';}catch(e){}
+  var systemPrompt="You are Tiffany's personal AI coach inside her Becoming OS app. She is a nurse practitioner two months into her neuro ICU role. She is focused on becoming her highest self. Be direct, warm, grounding. No fluff. Context: "+dockCoachCtxVal+" mode. Gratitude today: "+[g1,g2,g3].filter(Boolean).join(', ')+".";
+  fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:userMsg,systemPrompt:systemPrompt})})
+  .then(function(r){return r.json();}).then(function(d){
+    if(text)text.textContent=d.response||d.content||'Something went wrong.';
+  }).catch(function(){if(text)text.textContent='Network error. Try again.';});
+}
+initCarousel();
+
 </script>
 </body>
 </html>
