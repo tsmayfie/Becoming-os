@@ -246,7 +246,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .log-popup-empty{font-size:11px;color:var(--text2);font-style:italic;padding:4px 0 8px;}
 
 /* ── DOMAIN CAROUSEL ── */
-.domain-carousel-wrap{position:relative;overflow:hidden;touch-action:pan-y;width:100%;}
+.domain-carousel-wrap{position:relative;overflow:hidden;touch-action:pan-y;width:100%;min-height:280px;}
 .domain-carousel-track{display:flex;transition:transform .38s cubic-bezier(.4,0,.2,1);will-change:transform;width:100%;}
 .domain-carousel-slide{min-width:100%;padding:0 20px 32px;box-sizing:border-box;}
 .carousel-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 8px;}
@@ -257,7 +257,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .carousel-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:all .25s;cursor:pointer;}
 .carousel-dot.active{background:var(--gold);width:18px;border-radius:3px;}
 .carousel-domain-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text);font-weight:600;}
-.carousel-card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--border2);padding:28px 22px 22px;cursor:pointer;position:relative;margin-bottom:8px;transition:all .15s;}
+.carousel-card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--border2);padding:28px 22px 22px;cursor:pointer;position:relative;margin-bottom:8px;transition:all .15s;display:block;}
 .carousel-card:active{transform:scale(.98);}
 .cc-health{border-top-color:var(--blush);}
 .cc-career{border-top-color:var(--gold);}
@@ -286,6 +286,8 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .dock-sheet-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--cream);}
 .dock-sheet-close{all:unset;cursor:pointer;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text);padding:6px;}
 .dock-sheet-body{padding:18px 20px 100px;}
+
+#affPopupOverlay.active,#vizPopupOverlay.active,#driftPopupOverlay.active{display:flex !important;}
 </style>
 </head>
 <body>
@@ -455,7 +457,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
     <div class="pillars-row">
       <span class="pillar-tag">Grounded</span><span class="pillar-tag">Aligned</span><span class="pillar-tag">Healthy</span><span class="pillar-tag">Wealthy</span><span class="pillar-tag">Connected</span>
     </div>
-    <div class="streak-row"><div class="streak-pill">🔥 <span id="streakCount">0</span> day streak</div></div>
   </div>
   <div class="scroll-content" id="homeFlow">
     <div id="step-gratitude" class="flow-step" style="display:none;">
@@ -478,63 +479,170 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
         </div>
       </div>
     </div>
-    <div id="step-domains" class="flow-step" style="display:none;">
-      <div class="section-pad" style="padding-bottom:8px;">
-        <div class="flow-label">Morning · Step 2</div>
-        <div class="flow-title">Your <em>World</em></div>
-        <div class="flow-sub">Scroll through your domains. Tap to dive in.</div>
-      </div>
-      <!-- Carousel nav -->
-      <div class="carousel-nav">
-        <button class="carousel-arrow" id="carouselPrev" onclick="carouselMove(-1)" disabled>←</button>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-          <div class="carousel-dots" id="carouselDots"></div>
-          <div class="carousel-domain-label" id="carouselLabel">Health</div>
-        </div>
-        <button class="carousel-arrow" id="carouselNext" onclick="carouselMove(1)">→</button>
-      </div>
-      <div class="domain-carousel-wrap" id="carouselWrap">
-        <div class="domain-carousel-track" id="carouselTrack">
-          <!-- Health -->
-          <div class="domain-carousel-slide">
-            <div class="carousel-card cc-health" onclick="show('health')">
-              <div class="cc-icons">🧘🏾‍♀️✨🌸</div>
-              <div class="cc-name">Health</div>
-              <div class="cc-sub">Mind · Body · Soul<br>Sovereignty · Smoke-Free · Appearance</div>
-              <div class="cc-enter">Enter Domain →</div>
-            </div>
-          </div>
-          <!-- Career -->
-          <div class="domain-carousel-slide">
-            <div class="carousel-card cc-career" onclick="show('career')">
-              <div class="cc-icons">👩🏾‍⚕️🩺💼</div>
-              <div class="cc-name">Career</div>
-              <div class="cc-sub">NP · Expert · Builder<br>Neuro ICU · Real Estate · Empire</div>
-              <div class="cc-enter">Enter Domain →</div>
-            </div>
-          </div>
-          <!-- Leisure -->
-          <div class="domain-carousel-slide">
-            <div class="carousel-card cc-leisure" onclick="show('leisure')">
-              <div class="cc-icons">🦋🌺☀️✈️</div>
-              <div class="cc-name">Leisure</div>
-              <div class="cc-sub">Joy · Freedom · Adventure<br>Swimming · Travel · Growth</div>
-              <div class="cc-enter">Enter Domain →</div>
-            </div>
-          </div>
-          <!-- Home & Family -->
-          <div class="domain-carousel-slide">
-            <div class="carousel-card cc-home" onclick="show('homefamily')">
-              <div class="cc-icons">👑🕯️🌙🤍</div>
-              <div class="cc-name">Home &amp; Family</div>
-              <div class="cc-sub">Queen · Warmth · Love<br>Foundation · Legacy · Connection</div>
-              <div class="cc-enter">Enter Domain →</div>
-            </div>
-          </div>
+    <div id="step-domains" class="flow-step" style="display:none;position:relative;">
+      <!-- Floating side arrows -->
+      <button id="carouselPrev" onclick="carouselMove(-1)" style="all:unset;cursor:pointer;position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:120;width:36px;height:64px;background:rgba(10,8,6,0.85);border-right:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;opacity:0.3;transition:opacity .2s;">‹</button>
+      <button id="carouselNext" onclick="carouselMove(1)" style="all:unset;cursor:pointer;position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:120;width:36px;height:64px;background:rgba(10,8,6,0.85);border-left:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:20px;transition:opacity .2s;">›</button>
+      <!-- Domain label + dots -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 20px 10px;">
+        <div id="carouselLabel" style="font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:700;">Health</div>
+        <div style="display:flex;gap:8px;" id="carouselDots">
+          <div class="carousel-dot active" onclick="carouselGo(0)"></div>
+          <div class="carousel-dot" onclick="carouselGo(1)"></div>
+          <div class="carousel-dot" onclick="carouselGo(2)"></div>
+          <div class="carousel-dot" onclick="carouselGo(3)"></div>
         </div>
       </div>
-      <div class="carousel-hint">← swipe to explore →</div>
-      <div class="pad mt"><button class="btn-gold" onclick="showStep('priorities')">Set My Priorities →</button></div>
+      <!-- Carousel track -->
+      <div style="overflow:hidden;width:100%;position:relative;" id="carouselWrap">
+        <div id="carouselTrack" style="display:flex;transition:transform .35s ease;width:400%;transform:translateX(0);">
+          <!-- HEALTH SLIDE -->
+          <div style="width:25%;box-sizing:border-box;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 220px);">
+            <div style="border-top:3px solid var(--blush);">
+              <div class="domain-header"><div class="domain-icons-lg">🧘🏾‍♀️✨🌸</div><div class="domain-title">Health</div><div class="domain-subtitle">Mind · Body · Soul</div></div>
+              <div class="tab-row" style="margin-top:14px;">
+                <div class="tab-btn active" onclick="csHealthTab('sovereignty',this)">Mind</div>
+                <div class="tab-btn" onclick="csHealthTab('body',this)">Body</div>
+                <div class="tab-btn" onclick="csHealthTab('beauty',this)">Beauty</div>
+              </div>
+              <div id="cs-ht-sovereignty">
+                <div class="pillar-list">
+                  <div class="pillar-card active-focus">
+                    <div class="pillar-header"><span class="pillar-name">Emotional Sovereignty</span><span class="pillar-status">Active</span></div>
+                    <div class="pillar-desc">Identity installation, frequency management, drift detection.</div>
+                    <div class="sub-items">
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Morning OS completed</div><div class="sub-detail">Before any screen or scroll</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Stayed in my frequency</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Drift detected and named</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Affirmations read slowly</div></div></div>
+                    </div>
+                  </div>
+                  <div class="pillar-card also-active">
+                    <div class="pillar-header"><span class="pillar-name">Smoking Cessation</span><span class="pillar-status">Active</span></div>
+                    <div class="cessation-card" style="margin:8px 0 0;">
+                      <div class="cessation-title">Smoke-Free Clock</div>
+                      <div class="cessation-display"><span class="cessation-hours" id="cessHours2">0</span><span class="cessation-unit">hr</span><span class="cessation-mins" id="cessMins2">:00:00</span></div>
+                      <div class="cessation-actions" style="margin-top:10px;"><button class="cessation-btn" onclick="startCessation()">Start / Reset</button></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="cs-ht-body" style="display:none;">
+                <div class="pillar-list">
+                  <div class="pillar-card building">
+                    <div class="pillar-header"><span class="pillar-name">Diet &amp; Exercise</span><span class="pillar-status">Building</span></div>
+                    <div class="sub-items">
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Movement today</div><div class="sub-detail">20+ min — walking counts</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Protected sleep</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional nutrition</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Bupropion taken</div></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="cs-ht-beauty" style="display:none;">
+                <div class="pillar-list">
+                  <div class="pillar-card building">
+                    <div class="pillar-header"><span class="pillar-name">Appearance</span><span class="pillar-status">Active</span></div>
+                    <div class="sub-items">
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Hair maintained</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional outfit</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Makeup and grooming done</div></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:16px 20px;"><button class="btn-ghost" onclick="show('health')">Full Health View →</button></div>
+            </div>
+          </div>
+          <!-- CAREER SLIDE -->
+          <div style="width:25%;box-sizing:border-box;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 220px);">
+            <div style="border-top:3px solid var(--gold);">
+              <div class="domain-header"><div class="domain-icons-lg">👩🏾‍⚕️🩺💼</div><div class="domain-title">Career</div><div class="domain-subtitle">Knowledge is potential. Application is power.</div></div>
+              <div class="tab-row" style="margin-top:14px;">
+                <div class="tab-btn active" onclick="csCareerTab('neuro',this)">Neuro ICU</div>
+                <div class="tab-btn" onclick="csCareerTab('re',this)">Real Estate</div>
+              </div>
+              <div id="cs-c-neuro">
+                <div class="pillar-list">
+                  <div class="pillar-card active-focus">
+                    <div class="pillar-header"><span class="pillar-name">Neuro RN &amp; NP</span><span class="pillar-status">Current</span></div>
+                    <div class="pillar-desc">Stroke · Hemorrhage · Seizure · ICP management</div>
+                    <div class="progress-track"><div class="progress-fill" style="width:35%;"></div></div>
+                    <div class="progress-label">Foundation building — 35%</div>
+                    <div class="sub-items">
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Case library reviewed today</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Guideline or protocol reviewed</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Pre-shift 2-min activation</div></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="cs-c-re" style="display:none;">
+                <div class="pillar-list">
+                  <div class="pillar-card active-focus">
+                    <div class="pillar-header"><span class="pillar-name">Property Management</span><span class="pillar-status">Active</span></div>
+                    <div class="sub-items">
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Duplex — tenant or maintenance action</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Midterm rental — pricing checked</div></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:16px 20px;"><button class="btn-ghost" onclick="show('career')">Full Career View →</button></div>
+            </div>
+          </div>
+          <!-- LEISURE SLIDE -->
+          <div style="width:25%;box-sizing:border-box;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 220px);">
+            <div style="border-top:3px solid var(--sage);">
+              <div class="domain-header"><div class="domain-icons-lg">🦋🌺☀️✈️</div><div class="domain-title">Leisure</div><div class="domain-subtitle">Joy · Freedom · Adventure · Rest</div></div>
+              <div class="pillar-list">
+                <div class="pillar-card active-focus">
+                  <div class="pillar-header"><span class="pillar-name">🌊 Swimming</span><span class="pillar-status">Active Season</span></div>
+                  <div class="pillar-desc">Hot season = swim season. Schedule the day, not just the intention.</div>
+                  <div class="sub-items">
+                    <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research pools near Memphis</div></div></div>
+                    <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Swam this week</div></div></div>
+                  </div>
+                </div>
+                <div class="pillar-card building">
+                  <div class="pillar-header"><span class="pillar-name">✈️ Travel</span><span class="pillar-status">Planning</span></div>
+                  <div class="pillar-desc">One trip. Build toward it as a reward for consistent execution.</div>
+                </div>
+              </div>
+              <div style="padding:16px 20px;"><button class="btn-ghost" onclick="show('leisure')">Full Leisure View →</button></div>
+            </div>
+          </div>
+          <!-- HOME & FAMILY SLIDE -->
+          <div style="width:25%;box-sizing:border-box;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 220px);">
+            <div style="border-top:3px solid var(--lavender);">
+              <div class="domain-header"><div class="domain-icons-lg">👑🕯️🌙🤍</div><div class="domain-title">Home &amp; Family</div><div class="domain-subtitle">Queen · Warmth · Love · Foundation</div></div>
+              <div class="pillar-list">
+                <div class="pillar-card active-focus">
+                  <div class="pillar-header"><span class="pillar-name">Home</span><span class="pillar-status">Daily</span></div>
+                  <div class="sub-items">
+                    <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Clean — surfaces, dishes, visible order</div></div></div>
+                    <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Nothing piles up today</div></div></div>
+                  </div>
+                </div>
+                <div class="pillar-card building">
+                  <div class="pillar-header"><span class="pillar-name">Little Ones</span><span class="pillar-status">Every Day</span></div>
+                  <div class="sub-items">
+                    <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Connected with my kids today</div></div></div>
+                    <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">One learning moment or activity</div></div></div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:16px 20px;"><button class="btn-ghost" onclick="show('homefamily')">Full Home &amp; Family View →</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Bottom dots row -->
+      <div style="display:flex;justify-content:center;padding:10px 0 4px;">
+        <div style="font-size:9px;color:var(--text2);letter-spacing:.15em;text-transform:uppercase;">swipe or use arrows to browse</div>
+      </div>
+      <div class="pad" style="margin-top:4px;"><button class="btn-gold" onclick="showStep('priorities');hideCarouselArrows();">Set My Priorities →</button></div>
     </div>
     <div id="step-priorities" class="flow-step" style="display:none;">
       <div class="section-pad">
@@ -613,47 +721,87 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 </div>
 <!-- ═══════════════ HEALTH ═══════════════ -->
 <div class="screen" id="health">
-  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Health</span><span></span></div>
+  <div class="topbar"><span class="back-btn" onclick="goHome()">← Home</span><span class="topbar-title">Health</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">🧘🏾‍♀️✨🌸</div><div class="domain-title">Health</div><div class="domain-subtitle">Mind · Body · Soul</div></div>
     <div class="tab-row" style="margin-top:14px;">
-      <div class="tab-btn active" onclick="healthTab('sovereignty',this)">Mind</div>
-      <div class="tab-btn" onclick="healthTab('body',this)">Body</div>
-      <div class="tab-btn" onclick="healthTab('beauty',this)">Beauty</div>
+      <div class="tab-btn active" onclick="healthTab('affirmations',this)">Affirmations</div>
+      <div class="tab-btn" onclick="healthTab('visualization',this)">Visualization</div>
+      <div class="tab-btn" onclick="healthTab('reading',this)">Reading</div>
+      <div class="tab-btn" onclick="healthTab('drift',this)">Drift</div>
     </div>
-    <!-- MIND -->
-    <div id="ht-sovereignty">
-      <div style="padding:14px 20px 8px;"><div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:10px;font-weight:700;">Mind Goals — Hold to Edit</div><div class="goals-strip"><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-1" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Stay Substance-Free</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-2" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Daily Mindfulness</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-3" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Protect Your Peace</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-4" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">High-Frequency Inputs Only</span><span class="goal-tag" style="border-color:var(--blush);color:var(--blush);" data-key="mind-goal-5" onmousedown="startHold(this)" onmouseup="endHold()" ontouchstart="startHold(this)" ontouchend="endHold()">Monthly Wellness Check-In</span></div></div>
-      <div class="cessation-card">
-        <div class="cessation-title">Smoke-Free Clock</div>
-        <div class="cessation-display"><span class="cessation-hours" id="cessHours">0</span><span class="cessation-unit">hr</span><span class="cessation-mins" id="cessMins">:00:00</span></div>
-        <div class="cessation-sub" id="cessationSub">Tap Start to begin your clock</div>
-        <div style="margin-top:10px;"><div class="progress-track"><div class="progress-fill" id="cessProgress" style="width:0%;transition:width .4s;"></div></div><div style="font-size:9px;color:var(--text2);margin-top:4px;text-align:center;font-weight:500;" id="cessGoal">Goal: 72 hours → 1 week → 1 month</div></div>
-        <div class="cessation-actions"><button class="cessation-btn" onclick="startCessation()">Start / Reset</button><button class="cessation-log-btn" onclick="logCig()">Had one — log it</button></div>
-        <div style="margin-top:10px;font-size:11px;color:var(--text);font-style:italic;text-align:center;">Urge = drift signal. Name it. Reset. Redirect.</div>
-      </div>
+    <!-- AFFIRMATIONS -->
+    <div id="ht-affirmations">
       <div class="pillar-list">
         <div class="pillar-card active-focus">
-          <div class="pillar-header"><span class="pillar-name">Emotional Sovereignty</span><span class="pillar-status">Active</span></div>
-          <div class="pillar-desc">Identity installation, frequency management, drift detection. Morning OS before any screen, every day.</div>
-          <div class="progress-track"><div class="progress-fill" style="width:30%;"></div></div><div class="progress-label">Month 1 — building the nervous system</div>
-          <div class="sub-items">
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Morning OS completed</div><div class="sub-detail">Before any screen or scroll</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Frequency management</div><div class="sub-detail">Stayed in my frequency — didn't absorb theirs</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Drift detection active</div><div class="sub-detail">Noticed when I shifted — named it, returned</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Affirmations read slowly</div><div class="sub-detail">Like facts, not hype</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Spoke less, with more weight</div><div class="sub-detail">Didn't fill silence — let competence show</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Visualization done</div><div class="sub-detail">Calm under pressure, grounded during rounds</div></div></div>
+          <div class="pillar-header"><span class="pillar-name">Core Affirmations</span><span class="pillar-status">Read Aloud Daily</span></div>
+          <div class="pillar-desc">Read each one slowly, like a fact — not a wish. Feel it land.</div>
+          <div class="sub-items" style="margin-top:12px;">
+            <div class="sub-item" onclick="openAffirmationPopup(this,'I am free from the need to please. I am guided by purpose, not pressure.')"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">I am free from the need to please.</div><div class="sub-detail">Tap to read aloud ↗</div></div></div>
+            <div class="sub-item" onclick="openAffirmationPopup(this,'I think independently. I trust myself. I do not shrink.')"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">I think independently. I trust myself.</div><div class="sub-detail">Tap to read aloud ↗</div></div></div>
+            <div class="sub-item" onclick="openAffirmationPopup(this,'Calm. Competent. Significant. Rooted. This is my frequency.')"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Calm. Competent. Significant. Rooted.</div><div class="sub-detail">Tap to read aloud ↗</div></div></div>
+            <div class="sub-item" onclick="openAffirmationPopup(this,'I owe no one an explanation for my growth.')"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">I owe no one an explanation for my growth.</div><div class="sub-detail">Tap to read aloud ↗</div></div></div>
+            <div class="sub-item" onclick="openAffirmationPopup(this,'I am the green light. I do not wait for permission.')"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">I am the green light. I don't wait for permission.</div><div class="sub-detail">Tap to read aloud ↗</div></div></div>
           </div>
-          <div class="history-section"><div class="history-label">Progress Log</div><div class="history-entries" id="log-sovereignty"></div><div class="history-add-row"><input class="history-input" id="in-sovereignty" placeholder="What shifted, what held..."/><button class="history-btn" onclick="addLog('sovereignty')">+</button></div></div>
+          <div class="history-section"><div class="history-label">Progress Log</div><div class="history-entries" id="log-affirmations"></div><div class="history-add-row"><input class="history-input" id="in-affirmations" placeholder="What landed today, what shifted..."/><button class="history-btn" onclick="addLog('affirmations')">+</button></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- VISUALIZATION -->
+    <div id="ht-visualization" style="display:none;">
+      <div class="pillar-list">
+        <div class="pillar-card active-focus">
+          <div class="pillar-header"><span class="pillar-name">Daily Visualization</span><span class="pillar-status">Practice Daily</span></div>
+          <div class="pillar-desc">Close your eyes. See it clearly. Feel it in your body first.</div>
+          <div class="sub-items" style="margin-top:12px;">
+            <div class="sub-item" onclick="openVisualizationPopup(this,'rounds','See yourself walking into rounds — calm, planted, unhurried. Your voice is steady. You speak with weight, not volume. The attending says something sharp. You feel it — and let it pass. You stay in your body. You respond from your highest self, not your fear.')"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Rounds — calm and planted</div><div class="sub-detail">Tap to begin guided visualization ↗</div></div></div>
+            <div class="sub-item" onclick="openVisualizationPopup(this,'identity','See yourself one year from now. You stayed. You built. You know this unit better than anyone. The clinical excellence is yours — no one can take it. You walk differently. You speak differently. This version of you already exists. Step into her now.')"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Future self — one year from now</div><div class="sub-detail">Tap to begin guided visualization ↗</div></div></div>
+            <div class="sub-item" onclick="openVisualizationPopup(this,'peace','See yourself at the end of a hard shift. You handled it. You didn't react — you responded. You protected your energy. You walk to your car and feel proud. Not because it was easy, but because you showed up as the version of yourself you are becoming.')"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">End of shift — proud and intact</div><div class="sub-detail">Tap to begin guided visualization ↗</div></div></div>
+          </div>
+          <div class="history-section"><div class="history-label">Visualization Log</div><div class="history-entries" id="log-visualization"></div><div class="history-add-row"><input class="history-input" id="in-visualization" placeholder="What I saw, what I felt..."/><button class="history-btn" onclick="addLog('visualization')">+</button></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- READING -->
+    <div id="ht-reading" style="display:none;">
+      <div class="pillar-list">
+        <div class="pillar-card active-focus">
+          <div class="pillar-header"><span class="pillar-name">Daily Reading</span><span class="pillar-status">Feed Your Mind</span></div>
+          <div class="pillar-desc">10–20 min minimum. What you consume shapes who you become.</div>
+          <div class="sub-items" style="margin-top:12px;">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Read today</div><div class="sub-detail">10–20 min minimum</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">High-frequency input only</div><div class="sub-detail">Growth, strategy, identity — not noise</div></div></div>
+          </div>
+          <div class="history-section"><div class="history-label">Reading Log — What you're reading and key takeaways</div><div class="history-entries" id="log-reading"></div><div class="history-add-row"><input class="history-input" id="in-reading" placeholder="Book/article, key insight..."/><button class="history-btn" onclick="addLog('reading')">+</button></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- DRIFT DETECTION -->
+    <div id="ht-drift" style="display:none;">
+      <div class="pillar-list">
+        <div class="pillar-card active-focus">
+          <div class="pillar-header"><span class="pillar-name">Drift Detection</span><span class="pillar-status">Active Awareness</span></div>
+          <div class="pillar-desc">You felt the shift. That's the awareness. Name it — don't judge it.</div>
+          <div class="sub-items" style="margin-top:12px;">
+            <div class="sub-item" onclick="openDriftPopup(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">I noticed a drift today</div><div class="sub-detail">Tap to run the reset protocol ↗</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Stayed in my frequency</div><div class="sub-detail">Didn't absorb theirs</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Spoke less, with more weight</div><div class="sub-detail">Didn't fill silence — let competence show</div></div></div>
+          </div>
+          <div class="history-section"><div class="history-label">Drift Log</div><div class="history-entries" id="log-drift"></div><div class="history-add-row"><input class="history-input" id="in-drift" placeholder="What triggered the drift, how I returned..."/><button class="history-btn" onclick="addLog('drift')">+</button></div></div>
         </div>
         <div class="pillar-card also-active">
           <div class="pillar-header"><span class="pillar-name">Smoking Cessation</span><span class="pillar-status">Active</span></div>
-          <div class="pillar-desc">Same nervous system. Urge = drift signal. Name the trigger, run the reset, replace the behavior.</div>
+          <div class="pillar-desc">Urge = drift signal. Name the trigger, run the reset, replace the behavior.</div>
+          <div class="cessation-card" style="margin:8px 0;">
+            <div class="cessation-title">Smoke-Free Clock</div>
+            <div class="cessation-display"><span class="cessation-hours" id="cessHours">0</span><span class="cessation-unit">hr</span><span class="cessation-mins" id="cessMins">:00:00</span></div>
+            <div class="cessation-sub" id="cessationSub">Tap Start to begin your clock</div>
+            <div style="margin-top:10px;"><div class="progress-track"><div class="progress-fill" id="cessProgress" style="width:0%;transition:width .4s;"></div></div><div style="font-size:9px;color:var(--text2);margin-top:4px;text-align:center;font-weight:500;" id="cessGoal">Goal: 72 hours → 1 week → 1 month</div></div>
+            <div class="cessation-actions"><button class="cessation-btn" onclick="startCessation()">Start / Reset</button><button class="cessation-log-btn" onclick="logCig()">Had one — log it</button></div>
+          </div>
           <div class="sub-items">
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Logged urge and trigger</div><div class="sub-detail">Stress? Boredom? After a shift?</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Read or listened to cessation content</div><div class="sub-detail">Feed the new identity</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Replaced with alternative behavior</div><div class="sub-detail">Walk, water, breath work — anything else</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Logged urge and trigger</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Replaced with alternative behavior</div><div class="sub-detail">Walk, water, breath work</div></div></div>
           </div>
           <div class="history-section"><div class="history-label">Cessation Log</div><div class="history-entries" id="log-cessation"></div><div class="history-add-row"><input class="history-input" id="in-cessation" placeholder="Trigger was stress — walked instead..."/><button class="history-btn" onclick="addLog('cessation')">+</button></div></div>
         </div>
@@ -770,7 +918,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 </div>
 <!-- ═══════════════ CAREER ═══════════════ -->
 <div class="screen" id="career">
-  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Career</span><span></span></div>
+  <div class="topbar"><span class="back-btn" onclick="goHome()">← Home</span><span class="topbar-title">Career</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">👩🏾‍⚕️🩺💼</div><div class="domain-title">Career</div><div class="domain-subtitle">Knowledge is potential. Application is power.</div></div>
     <div class="domain-goals">
@@ -853,7 +1001,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 </div>
 <!-- ═══════════════ LEISURE ═══════════════ -->
 <div class="screen" id="leisure">
-  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Leisure</span><span></span></div>
+  <div class="topbar"><span class="back-btn" onclick="goHome()">← Home</span><span class="topbar-title">Leisure</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">🦋🌺☀️✈️</div><div class="domain-title">Leisure</div><div class="domain-subtitle">Joy · Freedom · Adventure · Rest</div></div>
     <div class="domain-goals">
@@ -999,7 +1147,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 </div>
 <!-- ═══════════════ AI COACH ═══════════════ -->
 <div class="screen" id="coach">
-  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title" style="color:var(--gold);">✦ AI Coach</span><span></span></div>
+  <div class="topbar"><span class="back-btn" onclick="goHome()">← Home</span><span class="topbar-title" style="color:var(--gold);">✦ AI Coach</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header" style="background:radial-gradient(ellipse at 50% 0%,#1e1608 0%,var(--bg) 70%);">
       <div class="domain-icons-lg">💫🔮✨</div>
@@ -1041,7 +1189,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 </div>
 <!-- ═══════════════ LIBRARY ═══════════════ -->
 <div class="screen" id="library">
-  <div class="topbar"><span class="back-btn" onclick="show('home')">← Home</span><span class="topbar-title">Library</span><span></span></div>
+  <div class="topbar"><span class="back-btn" onclick="goHome()">← Home</span><span class="topbar-title">Library</span><span></span></div>
   <div class="scroll-content">
     <div class="domain-header"><div class="domain-icons-lg">💡📖✨</div><div class="domain-title">Library</div><div class="domain-subtitle">Your personal knowledge base. Built by you, for you.</div></div>
     <div class="tab-row" style="margin-top:14px;">
@@ -1186,6 +1334,55 @@ function show(id){
 function showToast(msg){var t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
 function openReset(){document.getElementById('resetOverlay').classList.add('active');}
 function closeReset(){document.getElementById('resetOverlay').classList.remove('active');}
+
+function goHome(){
+  // Go back to home and show whatever step was last saved
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('home').classList.add('active');
+  var saved='day';try{saved=localStorage.getItem('currentStep')||'day';}catch(e){}
+  showStep(saved);
+}
+
+// ── AFFIRMATION POPUP ──
+function openAffirmationPopup(item,text){
+  var b=item.querySelector('.sub-check');if(b)b.classList.add('done');
+  document.getElementById('affPopupText').textContent=text;
+  document.getElementById('affPopupOverlay').classList.add('active');
+}
+function closeAffirmationPopup(){
+  document.getElementById('affPopupOverlay').classList.remove('active');
+}
+
+// ── VISUALIZATION POPUP ──
+function openVisualizationPopup(item,key,script){
+  var b=item.querySelector('.sub-check');if(b)b.classList.add('done');
+  document.getElementById('vizPopupText').textContent=script;
+  document.getElementById('vizPopupOverlay').classList.add('active');
+  // Animate text word by word
+  var words=script.split(' ');var i=0;var el=document.getElementById('vizPopupText');
+  el.textContent='';
+  var interval=setInterval(function(){
+    if(i<words.length){el.textContent+=words[i]+' ';i++;}
+    else{clearInterval(interval);}
+  },120);
+  document.getElementById('vizPopupOverlay')._interval=interval;
+}
+function closeVisualizationPopup(){
+  var overlay=document.getElementById('vizPopupOverlay');
+  if(overlay._interval)clearInterval(overlay._interval);
+  overlay.classList.remove('active');
+}
+
+// ── DRIFT POPUP ──
+function openDriftPopup(item){
+  var b=item.querySelector('.sub-check');if(b)b.classList.add('done');
+  document.getElementById('driftPopupOverlay').classList.add('active');
+}
+function closeDriftPopup(){
+  document.getElementById('driftPopupOverlay').classList.remove('active');
+}
+
+function unPrefill(el){el.classList.remove('prefilled');}
 function toggleCheck(item){
   var b=item.querySelector('.sub-check,.check-box');
   var nameEl=item.querySelector('.sub-name');
@@ -1213,7 +1410,7 @@ function showStep(step){
   if(target){target.style.display='block';target.style.animation='none';void target.offsetWidth;target.style.animation='fadeUp .4s ease forwards';}
   try{localStorage.setItem('currentStep',step);}catch(e){}
   window.scrollTo(0,0);
-  if(step==='domains'){setTimeout(initCarousel,50);}
+  if(step==='domains'){setTimeout(function(){initCarousel();showCarouselArrows();},50);}else{hideCarouselArrows();}
 }
 function initHomeFlow(){
   var today=new Date().toDateString();
@@ -1303,7 +1500,7 @@ function buildPlanner(){
     var val=saved||prefilled;
     var cls=prefilled&&!saved?'planner-input prefilled':'planner-input';
     return '<div class="planner-slot"><div class="planner-time">'+label+'</div>'
-      +'<input class="'+cls+'" data-hour="'+h+'" value="'+val.replace(/"/g,'&quot;')+'" placeholder="..." oninput="savePlan('+h+',this.value)" onfocus="this.classList.remove(\'prefilled\')" /></div>';
+      +'<input class="'+cls+'" data-hour="'+h+'" value="'+val.replace(/"/g,'&quot;')+'" placeholder="..." oninput="savePlan('+h+',this.value)" onfocus="unPrefill(this)" /></div>';
   }).join('');
 }
 function savePlan(h,val){try{localStorage.setItem('plan-'+h,val);}catch(e){}}
@@ -1367,7 +1564,7 @@ function addLog(key){
 function deleteLog(key,i){var logs=getLogs(key);logs.splice(i,1);saveLogs(key,logs);renderLogs(key);}
 var currentCoachUrl='';
 function openClaude(){if(currentCoachUrl)window.open(currentCoachUrl,'_blank');}
-var allLogKeys=['sovereignty','cessation','diet','appearance','beauty','beauty-notes','neuro','cases','pm','credit','pace','leisure-notes','home-notes','neuro-stroke','neuro-hem','neuro-sz','neuro-icp','design-back','design-int','lib-pace','lib-deals','lib-cases','wins','gratitude-archive','diet-plan','appearance-plan','medical','career-research','digital','income','networth','savings','kids-resources','memories','shopping','trips','bucket','content','swim','pm-notes'];
+var allLogKeys=['affirmations','visualization','reading','drift','sovereignty','cessation','diet','appearance','beauty','beauty-notes','neuro','cases','pm','credit','pace','leisure-notes','home-notes','neuro-stroke','neuro-hem','neuro-sz','neuro-icp','design-back','design-int','lib-pace','lib-deals','lib-cases','wins','gratitude-archive','diet-plan','appearance-plan','medical','career-research','digital','income','networth','savings','kids-resources','memories','shopping','trips','bucket','content','swim','pm-notes'];
 function initAllLogs(){allLogKeys.forEach(renderLogs);}
 function initDayTracker(){
   var grid=document.getElementById('dayGrid');if(!grid)return;
@@ -1384,7 +1581,7 @@ function initDayTracker(){
   if(bar)bar.style.width=Math.round((checked.length/30)*100)+'%';
   if(pct)pct.textContent=checked.length+' / 30 days';
 }
-function healthTab(t,el){['sovereignty','body','beauty'].forEach(function(x){var e=document.getElementById('ht-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#health .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
+function healthTab(t,el){['affirmations','visualization','reading','drift','body','beauty'].forEach(function(x){var e=document.getElementById('ht-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#health .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function beautyTab(t,el){['phase1','phase2','phase3','shopping'].forEach(function(x){var e=document.getElementById('bt-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#ht-beauty .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function careerTab(t,el){document.getElementById('c-neuro').style.display=t==='neuro'?'block':'none';document.getElementById('c-re').style.display=t==='re'?'block':'none';document.querySelectorAll('#career .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function leisureTab(t,el){['now','next','all','notes'].forEach(function(x){var e=document.getElementById('l-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#leisure .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
@@ -1601,40 +1798,87 @@ initStreak();
 initHomeFlow();
 buildPlanner();
 initLogDots();
+// Ensure carousel inits after everything is rendered
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(initCarousel, 200);
+});
+
+
+function csCareerTab(t,el){
+  document.getElementById('cs-c-neuro').style.display=t==='neuro'?'block':'none';
+  document.getElementById('cs-c-re').style.display=t==='re'?'block':'none';
+  el.closest('.tab-row').querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+}
+function csHealthTab(t,el){
+  ['sovereignty','body','beauty'].forEach(function(x){
+    var e=document.getElementById('cs-ht-'+x);if(e)e.style.display=x===t?'block':'none';
+  });
+  el.closest('.tab-row').querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+}
+function hideCarouselArrows(){
+  var p=document.getElementById('carouselPrev');var n=document.getElementById('carouselNext');
+  if(p)p.style.display='none';if(n)n.style.display='none';
+}
+function showCarouselArrows(){
+  var p=document.getElementById('carouselPrev');var n=document.getElementById('carouselNext');
+  if(p)p.style.display='flex';if(n)n.style.display='flex';
+  carouselGo(0);
+}
 
 // ── CAROUSEL ──
 var carouselIndex=0;
 var carouselDomains=['Health','Career','Leisure','Home & Family'];
 function initCarousel(){
+  carouselIndex=0;
+  var track=document.getElementById('carouselTrack');
   var dotsEl=document.getElementById('carouselDots');
-  if(!dotsEl)return;
+  if(!dotsEl||!track)return;
+  // Reset position
+  track.style.transition='none';
+  track.style.transform='translateX(0)';
+  void track.offsetWidth;
+  track.style.transition='transform .38s cubic-bezier(.4,0,.2,1)';
+  // Build dots
   dotsEl.innerHTML=carouselDomains.map(function(_,i){
     return '<div class="carousel-dot'+(i===0?' active':'')+'" onclick="carouselGo('+i+')"></div>';
   }).join('');
-  carouselGo(0);
+  // Update label and arrows
+  var lbl=document.getElementById('carouselLabel');
+  if(lbl)lbl.textContent=carouselDomains[0];
+  var prev=document.getElementById('carouselPrev');
+  var next=document.getElementById('carouselNext');
+  if(prev)prev.disabled=true;
+  if(next)next.disabled=false;
+  // Touch swipe - remove old listeners by cloning
   var wrap=document.getElementById('carouselWrap');
   if(wrap){
+    var newWrap=wrap.cloneNode(true);
+    wrap.parentNode.replaceChild(newWrap,wrap);
     var startX=0;
-    wrap.addEventListener('touchstart',function(e){startX=e.touches[0].clientX;},{passive:true});
-    wrap.addEventListener('touchend',function(e){
+    newWrap.addEventListener('touchstart',function(e){startX=e.touches[0].clientX;},{passive:true});
+    newWrap.addEventListener('touchend',function(e){
       var dx=e.changedTouches[0].clientX-startX;
       if(Math.abs(dx)>40){carouselMove(dx>0?-1:1);}
     },{passive:true});
   }
 }
 function carouselGo(idx){
-  var slides=document.querySelectorAll('.domain-carousel-slide');
-  if(idx<0)idx=0;if(idx>=slides.length)idx=slides.length-1;
+  var total=4;
+  if(idx<0)idx=0;if(idx>=total)idx=total-1;
   carouselIndex=idx;
   var track=document.getElementById('carouselTrack');
-  if(track)track.style.transform='translateX(-'+idx*100+'%)';
+  // Track is width:400%, each slide is 25% of track = 25% of track width
+  // So to show slide N we move by N * 25% of the track = N * (100/total)% of track
+  if(track)track.style.transform='translateX(-'+(idx*25)+'%)';
   var dots=document.querySelectorAll('#carouselDots .carousel-dot');
   dots.forEach(function(d,i){d.classList.toggle('active',i===idx);});
   var lbl=document.getElementById('carouselLabel');
   if(lbl)lbl.textContent=carouselDomains[idx];
   var prev=document.getElementById('carouselPrev');var next=document.getElementById('carouselNext');
-  if(prev)prev.disabled=(idx===0);
-  if(next)next.disabled=(idx===slides.length-1);
+  if(prev)prev.style.opacity=(idx===0)?'0.3':'1';
+  if(next)next.style.opacity=(idx===total-1)?'0.3':'1';
 }
 function carouselMove(dir){carouselGo(carouselIndex+dir);}
 
@@ -1708,7 +1952,7 @@ function buildDockPlanner(){
     var val=saved||prefilled;
     var cls=prefilled&&!saved?'planner-input prefilled':'planner-input';
     return '<div class="planner-slot"><div class="planner-time">'+label+'</div>'
-      +'<input class="'+cls+'" value="'+val.replace(/"/g,'&quot;')+'" placeholder="..." oninput="savePlan('+h+',this.value)" onfocus="this.classList.remove('prefilled')" /></div>';
+      +'<input class="'+cls+'" value="'+val.replace(/"/g,'&quot;')+'" placeholder="..." oninput="savePlan('+h+',this.value)" onfocus="unPrefill(this)" /></div>';
   }).join('');
 }
 var dockCoachCtxVal='morning';
