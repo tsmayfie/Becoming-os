@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -575,6 +576,8 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
 .dock-sheet-body{padding:18px 20px 100px;}
 
 #affPopupOverlay.active,#vizPopupOverlay.active,#driftPopupOverlay.active,#readingPopupOverlay.active{display:flex !important;}
+
+  #beautyAMPopup.active, #beautyPMPopup.active { display: flex !important; }
 </style>
 </head>
 <body id="artifacts-component-root-html">
@@ -726,17 +729,31 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
   <div class="home-hero">
     <div class="hero-icon">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100" height="100">
-        <circle cx="100" cy="100" r="96" fill="#12100e" stroke="#2e2a24" stroke-width="1"/>
-        <text x="22" y="155" font-family="Georgia,serif" font-size="145" font-weight="900" fill="#c8a96e">B</text>
-        <ellipse cx="152" cy="68" rx="24" ry="14" fill="#c47a6a" opacity=".88" transform="rotate(-38 152 68)"/>
-        <ellipse cx="158" cy="96" rx="17" ry="10" fill="#c47a6a" opacity=".62" transform="rotate(22 158 96)"/>
-        <ellipse cx="148" cy="64" rx="10" ry="5" fill="#f0d0c0" opacity=".18" transform="rotate(-38 148 64)"/>
-        <line x1="146" y1="60" x2="149" y2="100" stroke="#0a0806" stroke-width="3" stroke-linecap="round"/>
-        <path d="M146 62 Q138 46 133 38" stroke="#c8a96e" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <path d="M148 60 Q156 44 160 36" stroke="#c8a96e" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <circle cx="133" cy="38" r="3.5" fill="#c8a96e"/>
-        <circle cx="160" cy="36" r="3.5" fill="#c8a96e"/>
-        <circle cx="147" cy="68" r="2.5" fill="#f5f1eb"/>
+        <circle cx="100" cy="100" r="96" fill="#0a0806" stroke="#2e2a24" stroke-width="1"/>
+        <!-- B letter -->
+        <text x="18" y="158" font-family="Georgia,serif" font-size="148" font-weight="900" fill="#c8a96e">B</text>
+        <!-- Heart cutout in B counter -->
+        <path d="M84 108 C84 103 88 99 92 101 C94 99 98 99 98 104 C98 110 92 115 88 118 C84 115 84 113 84 108Z" fill="#0a0806"/>
+        <path d="M86 107 C86 103.5 89 101 92 103 C95 101 98 103.5 98 107 C98 112 92 117 89 119 C86 116 86 111 86 107Z" fill="none" stroke="#c8a96e" stroke-width="1.2"/>
+        <!-- Butterfly body -->
+        <line x1="148" y1="54" x2="150" y2="88" stroke="#6b5a3e" stroke-width="2" stroke-linecap="round"/>
+        <!-- Upper left wing (lavender) -->
+        <path d="M148 62 C138 52 122 46 118 56 C114 66 128 72 148 68Z" fill="#b8a8c8" opacity=".85"/>
+        <!-- Upper right wing (blush/rose) -->
+        <path d="M150 62 C162 48 178 44 180 56 C182 68 166 70 150 68Z" fill="#c49a8a" opacity=".85"/>
+        <!-- Lower left wing (sage) -->
+        <path d="M148 70 C136 72 122 80 126 88 C130 96 142 90 149 80Z" fill="#8aaa88" opacity=".80"/>
+        <!-- Lower right wing (gold/warm) -->
+        <path d="M150 70 C162 74 174 84 170 92 C166 98 154 90 150 80Z" fill="#c8a96e" opacity=".75"/>
+        <!-- Wing highlights -->
+        <path d="M148 62 C140 54 126 50 122 58" stroke="#f0e8d8" stroke-width=".6" fill="none" opacity=".4"/>
+        <path d="M150 62 C160 50 174 48 177 58" stroke="#f0e8d8" stroke-width=".6" fill="none" opacity=".4"/>
+        <!-- Antennae -->
+        <path d="M148 54 Q140 40 135 32" stroke="#c8a96e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M150 54 Q158 40 163 32" stroke="#c8a96e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="135" cy="32" r="2.5" fill="#c8a96e"/>
+        <circle cx="163" cy="32" r="2.5" fill="#c8a96e"/>
+        <circle cx="149" cy="64" r="2" fill="#f5f1eb"/>
       </svg>
     </div>
     <div class="hero-date" id="homeDate"></div>
@@ -811,6 +828,9 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
                       <div class="cessation-display"><span class="cessation-hours" id="cessHours2">0</span><span class="cessation-unit">hr</span><span class="cessation-mins" id="cessMins2">:00:00</span></div>
                       <div class="cessation-actions" style="margin-top:10px;"><button class="cessation-btn" onclick="startCessation()">Start / Reset</button></div>
                     </div>
+                    <div class="sub-items" style="margin-top:8px;">
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Bupropion taken</div><div class="sub-detail">With food, same time daily</div></div></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -822,7 +842,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
                       <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Movement today</div><div class="sub-detail">20+ min — walking counts</div></div></div>
                       <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Protected sleep</div></div></div>
                       <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional nutrition</div></div></div>
-                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Bupropion taken</div></div></div>
                     </div>
                   </div>
                 </div>
@@ -832,14 +851,15 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
                   <div class="pillar-card building">
                     <div class="pillar-header"><span class="pillar-name">Appearance</span><span class="pillar-status">Active</span></div>
                     <div class="sub-items">
-                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Hair maintained</div></div></div>
-                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional outfit</div></div></div>
-                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Makeup and grooming done</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Hair</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Nails</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Brows &amp; Lashes</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Makeup</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional Outfit</div></div></div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div style="padding:16px 20px;"><button class="btn-ghost" onclick="show('health')">Full Health View →</button></div>
             </div>
           </div>
           <!-- CAREER SLIDE -->
@@ -858,8 +878,9 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
                     <div class="progress-track"><div class="progress-fill" style="width:35%;"></div></div>
                     <div class="progress-label">Foundation building — 35%</div>
                     <div class="sub-items">
-                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Case library reviewed today</div></div></div>
                       <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Guideline or protocol reviewed</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Clinical skill practiced or logged</div></div></div>
+                      <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Case library reviewed today</div></div></div>
                       <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Pre-shift 2-min activation</div></div></div>
                     </div>
                   </div>
@@ -896,6 +917,15 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
                   <div class="pillar-header"><span class="pillar-name">✈️ Travel</span><span class="pillar-status">Planning</span></div>
                   <div class="pillar-desc">One trip. Build toward it as a reward for consistent execution.</div>
                 </div>
+                <div class="pillar-card building">
+                  <div class="pillar-header"><span class="pillar-name">🍳 Cooking Classes</span><span class="pillar-status">Building</span></div>
+                </div>
+                <div class="pillar-card building">
+                  <div class="pillar-header"><span class="pillar-name">🕯️ Candle Making</span><span class="pillar-status">Building</span></div>
+                </div>
+                <div class="pillar-card building">
+                  <div class="pillar-header"><span class="pillar-name">🌱 Gardening</span><span class="pillar-status">Building</span></div>
+                </div>
               </div>
               <div style="padding:16px 20px;"><button class="btn-ghost" onclick="show('leisure')">Full Leisure View →</button></div>
             </div>
@@ -910,6 +940,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
                   <div class="sub-items">
                     <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Clean — surfaces, dishes, visible order</div></div></div>
                     <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Nothing piles up today</div></div></div>
+                    <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Cook — intentional meal today</div></div></div>
                   </div>
                 </div>
                 <div class="pillar-card building">
@@ -1068,6 +1099,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
             <div class="cessation-actions"><button class="cessation-btn" onclick="startCessation()">Start / Reset</button><button class="cessation-log-btn" onclick="logCig()">Had one — log it</button></div>
           </div>
           <div class="sub-items">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Bupropion taken</div><div class="sub-detail">Take with food, same time daily</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Logged urge and trigger</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Replaced with alternative behavior</div><div class="sub-detail">Walk, water, breath work</div></div></div>
           </div>
@@ -1086,7 +1118,6 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Movement today</div><div class="sub-detail">20+ min — walking counts</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Protected sleep</div><div class="sub-detail">In bed by your target time</div></div></div>
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional nutrition</div><div class="sub-detail">No chaotic eating today</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Bupropion taken</div><div class="sub-detail">Take with food, same time daily</div></div></div>
           </div>
           <div class="history-section"><div class="history-label">Body Progress Log</div><div class="history-entries" id="log-diet"></div><div class="history-add-row"><input class="history-input" id="in-diet" placeholder="Walked 30 min, skipped emotional snacking..."/><button class="history-btn" onclick="addLog('diet')">+</button></div></div>
         </div>
@@ -1094,9 +1125,11 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div class="pillar-header"><span class="pillar-name">Appearance</span><span class="pillar-status">Active</span></div>
           <div class="pillar-desc">Soft, classy, glam. Building the full version of yourself daily.</div>
           <div class="sub-items">
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Hair maintained</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional outfit</div><div class="sub-detail">Dressed how you want to feel</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Makeup and grooming done</div><div class="sub-detail">Glam is self-respect made visible</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Hair</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Nails</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Brows &amp; Lashes</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Makeup</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intentional Outfit</div><div class="sub-detail">Dressed how you want to feel</div></div></div>
           </div>
           <div class="history-section"><div class="history-label">Appearance Log</div><div class="history-entries" id="log-appearance"></div><div class="history-add-row"><input class="history-input" id="in-appearance" placeholder="Got hair done, felt myself today..."/><button class="history-btn" onclick="addLog('appearance')">+</button></div></div>
         </div>
@@ -1116,26 +1149,32 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       </div>
       <div id="bt-phase1">
         <div class="info-note">Days 1–30 · Lock In the Foundation</div>
-        <div class="check-cat">Daily AM Routine</div>
-        <div class="checklist">
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">CeraVe Cleanser</div></div></div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Vitamin C Serum</div><div class="check-sub">Paula's Choice C15</div></div></div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Niacinamide</div><div class="check-sub">The Ordinary</div></div></div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">SPF Moisturizer</div></div></div>
+
+        <!-- AM Popup Button -->
+        <div style="padding:0 20px 10px;">
+          <button class="btn-gold" style="width:100%;padding:14px;font-size:13px;letter-spacing:.08em;" onclick="document.getElementById('beautyAMPopup').classList.add('active')">
+            ☀️ AM Routine
+          </button>
         </div>
-        <div class="check-cat">Daily PM Routine</div>
-        <div class="checklist">
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">CeraVe Cleanser</div></div></div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">BHA Toner</div><div class="check-sub">Paula's Choice</div></div></div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Retinol + Collagen</div><div class="check-sub">Night treatment</div></div></div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Laneige Lip Mask</div></div></div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Castor Oil on Lashes</div></div></div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Kojic Lip Treatment</div></div></div>
+
+        <!-- PM Popup Button -->
+        <div style="padding:0 20px 10px;">
+          <button class="btn-gold" style="width:100%;padding:14px;font-size:13px;letter-spacing:.08em;background:var(--card2);" onclick="document.getElementById('beautyPMPopup').classList.add('active')">
+            🌙 PM Routine
+          </button>
         </div>
+
         <div class="check-cat">2–3x Per Week</div>
         <div class="checklist">
           <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Teeth Whitening</div></div></div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Micro Needling</div></div></div>
         </div>
+
+        <div class="check-cat">Ongoing</div>
+        <div class="checklist">
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Ear Piercings Aftercare</div></div></div>
+        </div>
+
         <div class="pad mt"><div class="history-section"><div class="history-label">Skin Progress Log</div><div class="history-entries" id="log-beauty"></div><div class="history-add-row"><input class="history-input" id="in-beauty" placeholder="Noticed improvement in dark spots..."/><button class="history-btn" onclick="addLog('beauty')">+</button></div></div></div>
       </div>
       <div id="bt-phase2" style="display:none;">
@@ -1217,11 +1256,38 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
           <div class="history-section"><div class="history-label">Progress & Notes</div><div class="history-entries" id="log-neuro"></div><div class="history-add-row"><input class="history-input" id="in-neuro" placeholder="Covered ICP management today..."/><button class="history-btn" onclick="addLog('neuro')">+</button></div></div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold2);padding:14px 16px;margin-bottom:8px;">
-          <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);font-weight:600;margin-bottom:8px;">Case Library & Education</div>
+          <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);font-weight:600;margin-bottom:8px;">Guideline & Protocol Review</div>
+          <div class="sub-items" style="margin-top:0;">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Guideline or protocol reviewed today</div><div class="sub-detail">Rotate weekly through neuro topics</div></div></div>
+          </div>
+          <div class="history-section"><div class="history-label">Guideline Log</div><div class="history-entries" id="log-guidelines"></div><div class="history-add-row"><input class="history-input" id="in-guidelines" placeholder="Reviewed AHA stroke guidelines..."/><button class="history-btn" onclick="addLog('guidelines')">+</button></div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--blush);padding:14px 16px;margin-bottom:8px;">
+          <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);font-weight:600;margin-bottom:10px;">Clinical Skills — Competency Tracker</div>
+          <div style="font-size:11px;color:var(--text);font-style:italic;margin-bottom:10px;">Check off each skill as you become confident and competent.</div>
+          <div class="sub-items" style="margin-top:0;">
+            <div style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--blush);font-weight:700;padding:6px 0 4px;">Assessment</div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Neuro Exam — Full assessment</div><div class="sub-detail">LOC, pupils, motor, cranial nerves, reflexes</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Neuro Imaging Interpretation</div><div class="sub-detail">CT head, MRI basics, hemorrhage patterns, midline shift</div></div></div>
+            <div style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--blush);font-weight:700;padding:10px 0 4px;">Lines & Access</div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">IV Insertion</div><div class="sub-detail">Peripheral access, troubleshooting difficult sticks</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">IV Pump Management</div><div class="sub-detail">Drip rates, titration, alarms, compatibility</div></div></div>
+            <div style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--blush);font-weight:700;padding:10px 0 4px;">Drains & Monitoring</div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">EVD Management</div><div class="sub-detail">Zeroing, leveling, drainage, troubleshooting</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">JP Drain Management</div><div class="sub-detail">Output monitoring, stripping, site care</div></div></div>
+            <div style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--blush);font-weight:700;padding:10px 0 4px;">Procedures</div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Lumbar Puncture</div><div class="sub-detail">Setup, positioning, procedure, post-LP care</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Intubation — Assist & Manage</div><div class="sub-detail">Prep, RSI, post-intubation management, vent basics</div></div></div>
+            <div style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--blush);font-weight:700;padding:10px 0 4px;">Tubes & Catheters</div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Foley Insertion & Troubleshooting</div><div class="sub-detail">Insertion technique, blockage, bypassing, removal</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">NGT Insertion & Troubleshooting</div><div class="sub-detail">Placement confirmation, clog management, reposition</div></div></div>
+          </div>
+          <div class="history-section"><div class="history-label">Skills Notes</div><div class="history-entries" id="log-skills"></div><div class="history-add-row"><input class="history-input" id="in-skills" placeholder="First time managing EVD independently..."/><button class="history-btn" onclick="addLog('skills')">+</button></div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold2);padding:14px 16px;margin-bottom:8px;">
+          <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);font-weight:600;margin-bottom:8px;">Case Library</div>
           <div class="sub-items" style="margin-top:0;">
             <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Case library — reviewed a case today</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Guideline or protocol reviewed</div><div class="sub-detail">Rotate weekly through neuro topics</div></div></div>
-            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Deep work block done</div><div class="sub-detail">45–90 min, phone away</div></div></div>
           </div>
           <div class="history-section"><div class="history-label">Case Library Log</div><div class="history-entries" id="log-cases"></div><div class="history-add-row"><input class="history-input" id="in-cases" placeholder="Completed SAH case module..."/><button class="history-btn" onclick="addLog('cases')">+</button></div></div>
         </div>
@@ -1233,8 +1299,24 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       <div class="pad">
         <div class="sub-items" style="padding:0;">
           <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Pre-shift 2-min activation</div><div class="sub-detail">Planted before entering — not reactive</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Incident log if needed</div><div class="sub-detail">Date · what was said · who witnessed</div></div></div>
         </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--sage);padding:14px 16px;margin:0 20px 8px;">
+        <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--sage);font-weight:600;margin-bottom:8px;">Networking & Professional Presence</div>
+        <div class="sub-items" style="margin-top:0;">
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Connected with a colleague this week</div><div class="sub-detail">Build relationships across the unit</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">LinkedIn updated or engaged</div></div></div>
+        </div>
+        <div class="history-section"><div class="history-label">Networking Log</div><div class="history-entries" id="log-network"></div><div class="history-add-row"><input class="history-input" id="in-network" placeholder="Had great conversation with Dr. Farage..."/><button class="history-btn" onclick="addLog('network')">+</button></div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--lavender);padding:14px 16px;margin:0 20px 20px;">
+        <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--lavender);font-weight:600;margin-bottom:8px;">CME & Licensure</div>
+        <div class="sub-items" style="margin-top:0;">
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">CME credits on track</div><div class="sub-detail">Track hours toward renewal requirement</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">License renewal dates noted</div></div></div>
+          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">DEA / prescriptive authority current</div></div></div>
+        </div>
+        <div class="history-section"><div class="history-label">CME Log</div><div class="history-entries" id="log-cme"></div><div class="history-add-row"><input class="history-input" id="in-cme" placeholder="Completed 2hr stroke CME module..."/><button class="history-btn" onclick="addLog('cme')">+</button></div></div>
       </div>
     </div>
     <div id="c-re" style="display:none;">
@@ -1284,38 +1366,69 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       </div>
     </div>
     <div class="tab-row" style="margin-top:14px;">
-      <div class="tab-btn active" onclick="leisureTab('now',this)">Now</div>
-      <div class="tab-btn" onclick="leisureTab('next',this)">Next</div>
-      <div class="tab-btn" onclick="leisureTab('all',this)">All</div>
+      <div class="tab-btn active" onclick="leisureTab('all',this)">All</div>
       <div class="tab-btn" onclick="leisureTab('notes',this)">Notes</div>
     </div>
-    <div id="l-now">
-      <div class="phase-strip"><div class="phase-now">Summer — Active</div><div class="phase-name">Swimming</div></div>
-      <div class="info-note" style="margin-top:12px;">Hot season = swim season. Schedule the day, not just the intention.</div>
-      <div class="pad">
-        <div class="sub-items" style="padding:0;">
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research pools and locations near Memphis</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find swim instructors and lessons</div><div class="sub-detail">Search for instructors near you</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find out cost and membership options</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Sign up and schedule first session</div></div></div>
-          <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Swam this week</div></div></div>
+    <div id="l-all">
+      <div class="pillar-list">
+        <div class="pillar-card active-focus">
+          <div class="pillar-header"><span class="pillar-name">🌊 Swimming</span><span class="pillar-status">Active Season</span></div>
+          <div class="pillar-desc">Hot season = swim season. Schedule the day, not just the intention.</div>
+          <div class="sub-items">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research pools and locations near Memphis</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find swim instructors and lessons</div><div class="sub-detail">Search for instructors near you</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Find out cost and membership options</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Sign up and schedule first session</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Swam this week</div></div></div>
+          </div>
         </div>
-      </div>
-    </div>
-    <div id="l-next" style="display:none;">
-      <div class="pillar-list">
-        <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">✈️ Travel</span><span class="pillar-status">Planning</span></div><div class="pillar-desc">One trip. Build toward it as a reward for consistent execution.</div></div>
-        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🗣 Speaking Clearly</span><span class="pillar-status">Queued</span></div><div class="pillar-desc">Accent refinement, articulation. Can start anytime.</div></div>
+        <div class="pillar-card building">
+          <div class="pillar-header"><span class="pillar-name">✈️ Travel</span><span class="pillar-status">Planning</span></div>
+          <div class="pillar-desc">One trip. Build toward it as a reward for consistent execution.</div>
+          <div class="sub-items">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Decide on destination</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Set a travel date and budget</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research flights and accommodations</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Book at least one thing</div><div class="sub-detail">Flight, hotel, or activity — commit to something</div></div></div>
+          </div>
+        </div>
+        <div class="pillar-card building">
+          <div class="pillar-header"><span class="pillar-name">🍳 Cooking Classes</span><span class="pillar-status">Building</span></div>
+          <div class="pillar-desc">Intentional cooking — learning technique, not just surviving meals.</div>
+          <div class="sub-items">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research local or online cooking classes</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Try one new recipe this week</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Sign up for a class</div></div></div>
+          </div>
+        </div>
+        <div class="pillar-card building">
+          <div class="pillar-header"><span class="pillar-name">🕯️ Candle Making</span><span class="pillar-status">Building</span></div>
+          <div class="pillar-desc">Creative, sensory, and calming. A craft worth learning slowly.</div>
+          <div class="sub-items">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research supplies and starter kits</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Order a beginner kit</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Make first candle</div></div></div>
+          </div>
+        </div>
+        <div class="pillar-card building">
+          <div class="pillar-header"><span class="pillar-name">🌱 Gardening</span><span class="pillar-status">Building</span></div>
+          <div class="pillar-desc">Grow something. Patience, intention, and connection to the earth.</div>
+          <div class="sub-items">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Decide what to grow — herbs, veggies, flowers</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Set up a garden bed or planter</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Plant something this season</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Tended to plants this week</div></div></div>
+          </div>
+        </div>
+        <div class="pillar-card queued">
+          <div class="pillar-header"><span class="pillar-name">🗣️ Articulate Communication</span><span class="pillar-status">Queued</span></div>
+          <div class="pillar-desc">Clear, confident, commanding. How you speak is how you're perceived.</div>
+          <div class="sub-items">
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Research accent refinement resources</div></div></div>
+            <div class="sub-item" onclick="toggleCheck(this)"><div class="sub-check"></div><div class="sub-text"><div class="sub-name">Daily 10-min practice — articulation drills</div></div></div>
+          </div>
+        </div>
         <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🇪🇸 Spanish</span><span class="pillar-status">Queued</span></div><div class="pillar-desc">10 min daily. Stack onto a morning habit.</div></div>
-      </div>
-    </div>
-    <div id="l-all" style="display:none;">
-      <div class="pillar-list">
-        <div class="pillar-card active-focus"><div class="pillar-header"><span class="pillar-name">🌊 Swimming</span><span class="pillar-status">Active</span></div></div>
-        <div class="pillar-card building"><div class="pillar-header"><span class="pillar-name">✈️ Travel</span><span class="pillar-status">Planning</span></div></div>
-        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🗣 Speaking Clearly</span><span class="pillar-status">Queued</span></div></div>
-        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🌱 Growing Plants</span><span class="pillar-status">Cooler Months</span></div></div>
-        <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🇪🇸 Spanish</span><span class="pillar-status">Queued</span></div></div>
         <div class="pillar-card queued"><div class="pillar-header"><span class="pillar-name">🧵 Sewing</span><span class="pillar-status">Queued</span></div></div>
       </div>
     </div>
@@ -1358,6 +1471,7 @@ textarea.g-input{resize:none;min-height:80px;line-height:1.6;}
       <div class="checklist">
         <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Clean</div><div class="check-sub">Surfaces, dishes, visible order</div></div></div>
         <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Maintain</div><div class="check-sub">Nothing piles up today</div></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Cook</div><div class="check-sub">Intentional meal — not just survival food</div></div></div>
       </div>
       <div class="check-cat">Weekly</div>
       <div class="checklist">
@@ -1874,7 +1988,7 @@ function initDayTracker(){
 function healthTab(t,el){['sovereignty','body','beauty'].forEach(function(x){var e=document.getElementById('ht-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#health .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function beautyTab(t,el){['phase1','phase2','phase3','shopping'].forEach(function(x){var e=document.getElementById('bt-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#ht-beauty .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function careerTab(t,el){document.getElementById('c-neuro').style.display=t==='neuro'?'block':'none';document.getElementById('c-re').style.display=t==='re'?'block':'none';document.querySelectorAll('#career .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
-function leisureTab(t,el){['now','next','all','notes'].forEach(function(x){var e=document.getElementById('l-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#leisure .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
+function leisureTab(t,el){['all','notes'].forEach(function(x){var e=document.getElementById('l-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#leisure .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function homeTab(t,el){['home','kids','adult','notes'].forEach(function(x){var e=document.getElementById('h-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#homefamily .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function libTab(t,el){['self','career','homefam','leisure'].forEach(function(x){var e=document.getElementById('lib-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#library .tab-row:first-of-type .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
 function careerLibTab(t,el){['neuro','re','digital','finance'].forEach(function(x){var e=document.getElementById('clt-'+x);if(e)e.style.display=x===t?'block':'none';});document.querySelectorAll('#lib-career .tab-row .tab-btn').forEach(function(x){x.classList.remove('active');});el.classList.add('active');}
@@ -2273,5 +2387,40 @@ function dockAskCoach(){
 initCarousel();
 
 </script>
+
+<!-- BEAUTY AM POPUP -->
+<div id="beautyAMPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)this.classList.remove('active')">
+  <div style="background:var(--card);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 40px;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--gold);">☀️ AM Routine</div>
+      <button onclick="document.getElementById('beautyAMPopup').classList.remove('active')" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div class="checklist">
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">CeraVe Cleanser</div></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Vitamin C Serum</div><div class="check-sub">Paula's Choice C15</div></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Niacinamide</div><div class="check-sub">The Ordinary</div></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">SPF Moisturizer</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- BEAUTY PM POPUP -->
+<div id="beautyPMPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)this.classList.remove('active')">
+  <div style="background:var(--card);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 40px;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--gold);">🌙 PM Routine</div>
+      <button onclick="document.getElementById('beautyPMPopup').classList.remove('active')" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div class="checklist">
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">CeraVe Cleanser</div></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">BHA Toner</div><div class="check-sub">Paula's Choice</div></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Retinol + Collagen</div><div class="check-sub">Night treatment</div></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Laneige Lip Mask</div></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Castor Oil on Lashes</div></div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div style="flex:1;"><div class="check-name">Kojic Lip Treatment</div></div></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
