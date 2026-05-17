@@ -5158,6 +5158,7 @@
             return;
         }
         document.getElementById('affPopupText').textContent = sovAffirmations[sovAffIdx];
+        document.getElementById('affPopupCounter').textContent = (sovAffIdx + 1) + ' of ' + sovAffirmations.length;
         document.getElementById('affPopupOverlay').style.display = 'flex';
         document.getElementById('affPopupOverlay').classList.add('active');
     }
@@ -6514,9 +6515,10 @@
     <!-- AFFIRMATIONS POPUP -->
     <div id="affPopupOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,8,6,.97);z-index:9000;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
         <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:24px;font-weight:700;">Affirmations · Read Aloud</div>
+        <div style="font-size:9px;letter-spacing:.2em;color:var(--text2);margin-bottom:16px;" id="affPopupCounter"></div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:var(--cream);line-height:1.8;max-width:340px;margin-bottom:32px;" id="affPopupText"></div>
         <div style="font-size:11px;color:var(--text2);font-style:italic;margin-bottom:28px;">Say it like a fact. Feel it land.</div>
-        <button onclick="closeAffirmationPopup()" style="all:unset;cursor:pointer;background:var(--blush);color:white;padding:14px 32px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;">Done</button>
+        <button onclick="closeAffirmationPopup()" style="all:unset;display:inline-block;cursor:pointer;background:var(--blush);color:white;padding:14px 32px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-width:120px;text-align:center;">Done</button>
     </div>
 
     <!-- VISUALIZATION POPUP -->
