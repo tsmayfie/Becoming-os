@@ -6942,15 +6942,14 @@ body::before {
   var affTouchStartX = null, affTouchStartY = null;
 
   /* ── OPEN from existing openSovSection call ── */
-  window.openAffirmations = function() {
-    var el = document.getElementById('sov-affirmations');
-    if (!el) return;
-    affRenderAnchors();
-    affRenderCats();
-    affShowAnchorsView();
-    el.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  };
+window.affDone = function() {
+    var chk = document.getElementById('sov-check-affirmations');
+    if (chk) chk.classList.add('done');
+
+    showToast('Affirmations complete ✓');
+
+    affBackToAnchors();
+};
 
   /* ── CLOSE (X button) ── */
 window.closeSovAffirmations = function() {
