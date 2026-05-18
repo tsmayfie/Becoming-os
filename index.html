@@ -4,6 +4,293 @@
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.min.js" integrity="sha512-iZ2ORl595Wx6miw+GuadDet4WQbdSWS3JLMoNfY8cRGoEFy6oT3G9IbcrBeL6AfkgpA51ETt/faX6yLV+/gFJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
+      (function() {
+        const originalConsole = window.console;
+        window.console = {
+          log: (...args) => {
+            originalConsole.log(...args);
+            window.parent.postMessage({ type: 'console', message: args.join(' ') }, '*');
+          },
+          error: (...args) => {
+            originalConsole.error(...args);
+            window.parent.postMessage({ type: 'console', message: 'Error: ' + args.join(' ') }, '*');
+          },
+          warn: (...args) => {
+            originalConsole.warn(...args);
+            window.parent.postMessage({ type: 'console', message: 'Warning: ' + args.join(' ') }, '*');
+          }
+        };
+
+        let requestId = 0;
+        let callbacksMap = new Map();
+        let streamControllers = new Map();
+        
+        window.claude = {
+          complete: (prompt) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'claudeComplete', id, prompt }, '*');
+            });
+          }
+        };
+
+        window.storage = {
+          get: (key, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'storageGet', id, key, shared }, '*');
+            });
+          },
+          set: (key, value, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'storageSet', id, key, value, shared }, '*');
+            });
+          },
+          delete: (key, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'storageDelete', id, key, shared }, '*');
+            });
+          },
+          list: (prefix, shared = false) => {
+            return new Promise((resolve, reject) => {
+              const id = requestId++;
+              callbacksMap.set(id, { resolve, reject });
+              window.parent.postMessage({ type: 'storageList', id, prefix, shared }, '*');
+            });
+          }
+        };
+
+        let pendingBlobs = new Map();
+        URL.createObjectURL = (blob) => {
+          // Store the blob and create an ID and URL for it
+          const blobId = `blob-${Date.now()}-${Math.random()}`;
+          pendingBlobs.set(blobId, blob);
+          return `blob-request://${blobId}`;
+        };
+
+        URL.revokeObjectURL = (url) => {
+          // Remove the blob from our store
+          const blobId = url.replace("blob-request://", "");
+          pendingBlobs.delete(blobId);
+        };
+
+        const getBlobFromURL = (url) => {
+          const blobId = url.replace("blob-request://", "");
+          return pendingBlobs.get(blobId);
+        };
+
+        // Override global fetch with streaming support
+        window.fetch = (url, init = {}) => {
+          return new Promise((resolve, reject) => {
+            const id = requestId++;
+            const channelId = `fetch-${id}-${Date.now()}`;
+            
+            callbacksMap.set(id, { 
+              resolve: (response) => {
+                // Create a ReadableStream for the response body
+                const stream = new ReadableStream({
+                  start(controller) {
+                    streamControllers.set(channelId, controller);
+                  },
+                  cancel() {
+                    streamControllers.delete(channelId);
+                  }
+                });
+                
+                // Create and return the Response with the stream
+                resolve(new Response(stream, {
+                  status: response.status,
+                  statusText: response.statusText,
+                  headers: response.headers
+                }));
+              },
+              reject,
+              channelId
+            });
+            
+            window.parent.postMessage({
+              type: 'proxyFetch',
+              id,
+              url,
+              init,
+              channelId
+            }, '*');
+          });
+        };
+
+        window.addEventListener('message', async (event) => {
+          if (event.data.type === 'takeScreenshot') {
+            const rootElement = document.getElementById('artifacts-component-root-html');
+            if (!rootElement) {
+              window.parent.postMessage({
+                type: 'screenshotError',
+                error: new Error('Root element not found'),
+              }, '*');
+            }
+            const screenshot = await htmlToImage.toPng(rootElement, {
+              imagePlaceholder:
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjePDgwX8ACOQDoNsk0PMAAAAASUVORK5CYII=",
+            });
+            window.parent.postMessage({
+              type: 'screenshotData',
+              data: screenshot,
+            }, '*');
+          } else if (event.data.type === 'claudeComplete') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.completion);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'proxyFetchResponse') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+              callbacksMap.delete(event.data.id);
+            } else {
+              // Initial response with headers, status, etc.
+              callback.resolve({
+                status: event.data.status,
+                statusText: event.data.statusText,
+                headers: event.data.headers
+              });
+              // Don't delete the callback yet if streaming
+              if (!event.data.body) {
+                callbacksMap.delete(event.data.id);
+              }
+            }
+          } else if (event.data.type === 'proxyFetchStream') {
+            // Handle streaming data chunks
+            const controller = streamControllers.get(event.data.channelId);
+            if (controller) {
+              if (event.data.error) {
+                controller.error(new Error(event.data.error));
+                streamControllers.delete(event.data.channelId);
+              } else if (event.data.done) {
+                controller.close();
+                streamControllers.delete(event.data.channelId);
+                // Clean up the callback
+                const callback = Array.from(callbacksMap.entries()).find(
+                  ([_, value]) => value.channelId === event.data.channelId
+                );
+                if (callback) {
+                  callbacksMap.delete(callback[0]);
+                }
+              } else if (event.data.chunk) {
+                controller.enqueue(new Uint8Array(event.data.chunk));
+              }
+            }
+          } else if (event.data.type === 'storageGet') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageSet') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageDelete') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          } else if (event.data.type === 'storageList') {
+            const callback = callbacksMap.get(event.data.id);
+            if (event.data.error) {
+              callback.reject(new Error(event.data.error));
+            } else {
+              callback.resolve(event.data.result);
+            }
+            callbacksMap.delete(event.data.id);
+          }
+        });
+
+        window.addEventListener('click', (event) => {
+          const isEl = event.target instanceof HTMLElement;
+          if (!isEl) return;
+    
+          // find ancestor links
+          const linkEl = event.target.closest("a");
+          if (!linkEl || !linkEl.href) return;
+    
+          event.preventDefault();
+          event.stopImmediatePropagation();
+    
+          if (linkEl.href.startsWith("blob-request:")) {
+            const blob = getBlobFromURL(linkEl.href);
+            if (!blob) return;
+            void blob.arrayBuffer().then((data) => {
+              window.parent.postMessage({
+                type: "downloadFile",
+                filename: linkEl.download,
+                data,
+                mimeType: blob.type || "application/octet-stream",
+              });
+            });
+          } else if (linkEl.href.startsWith("data:")) {
+            const [header, base64Data] = linkEl.href.split(",");
+            const mimeMatch = header.match(/data:([^;]+)/);
+            const mimeType = mimeMatch ? mimeMatch[1] : "application/octet-stream";
+            const binaryString = atob(base64Data);
+            const data = Uint8Array.from(binaryString, (c) =>
+              c.charCodeAt(0),
+            ).buffer;
+            window.parent.postMessage({
+              type: "downloadFile",
+              filename: linkEl.download,
+              data,
+              mimeType,
+            });
+          } else {
+            let linkUrl;
+            try {
+              linkUrl = new URL(linkEl.href);
+            } catch (error) {
+              return;
+            }
+    
+            if (linkUrl.hostname === window.location.hostname) return;
+      
+            window.parent.postMessage({
+              type: 'openExternal',
+              href: linkEl.href,
+            }, '*');
+          }
+      });
+
+        const originalOpen = window.open;
+        window.open = function (url) {
+          window.parent.postMessage({
+            type: "openExternal",
+            href: url,
+          }, "*");
+        };
+
+        window.addEventListener('error', (event) => {
+          window.parent.postMessage({ type: 'console', message: 'Uncaught Error: ' + event.message }, '*');
+        });
+      })();
+    </script>
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.min.js" integrity="sha512-iZ2ORl595Wx6miw+GuadDet4WQbdSWS3JLMoNfY8cRGoEFy6oT3G9IbcrBeL6AfkgpA51ETt/faX6yLV+/gFJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
     (function() {
         const originalConsole = window.console;
         window.console = {
@@ -2424,7 +2711,7 @@ body::before {
     box-shadow: 0 0 12px rgba(200,169,110,0.15);
 } </style> 
 </head>
-<body id="artifacts-component-root-html">
+<body id="artifacts-component-root-html" id="artifacts-component-root-html">
     <div class="toast" id="toast"></div>
     <!-- RESET OVERLAY -->
     <div class="reset-overlay" id="resetOverlay">
@@ -4639,536 +4926,548 @@ body::before {
     <div class="screen" id="library">
         <div class="topbar">
             <span class="back-btn" onclick="goHome()">← Home</span>
-            <span class="topbar-title">Library</span>
+            <span class="topbar-title">Reading</span>
             <span></span>
         </div>
-        <div class="scroll-content">
-            <div class="domain-header">
-                <div class="domain-icons-lg">💡📖✨</div>
-                <div class="domain-title">Library</div>
-                <div class="domain-subtitle">Your personal knowledge base. Built by you, for you.</div>
-            </div>
-            <div class="tab-row" style="margin-top:14px;">
-                <div class="tab-btn active" onclick="libTab('self',this)">Self</div>
-                <div class="tab-btn" onclick="libTab('career',this)">Career</div>
-                <div class="tab-btn" onclick="libTab('homefam',this)">Home</div>
-                <div class="tab-btn" onclick="libTab('leisure',this)">Leisure</div>
-            </div>
-            <div id="lib-self">
-                <div class="phase-strip">
-                    <div class="phase-now">Your Inner World</div>
-                    <div class="phase-name">Self — Mind · Body · Vision</div>
-                </div>
-                <div class="pillar-list">
-                    <div class="pillar-card active-focus">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🌟 Vision Board</span>
-                            <span class="pillar-status">Your North Star</span>
-                        </div>
-                        <div class="pillar-desc">Write out what your life looks like fully realized. Read this when you drift.</div>
-                        <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-                            <div>
-                                <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;font-weight:700;">Career & Wealth</div>
-                                <textarea class="g-input" style="min-height:60px;font-size:13px;" placeholder="I am a thriving NP with a real estate empire..."></textarea>
-                            </div>
-                            <div>
-                                <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--blush);margin-bottom:4px;font-weight:700;">Home & Family</div>
-                                <textarea class="g-input" style="min-height:60px;font-size:13px;" placeholder="My home is a sanctuary of beauty and peace..."></textarea>
-                            </div>
-                            <div>
-                                <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--sage);margin-bottom:4px;font-weight:700;">Body & Beauty</div>
-                                <textarea class="g-input" style="min-height:60px;font-size:13px;" placeholder="I am strong, glowing, confident in my skin..."></textarea>
-                            </div>
-                            <div>
-                                <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--lavender);margin-bottom:4px;font-weight:700;">Freedom & Life</div>
-                                <textarea class="g-input" style="min-height:60px;font-size:13px;" placeholder="I travel freely, I live on my own terms..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card active-focus">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🏆 Wins Log</span>
-                            <span class="pillar-status">Evidence of Becoming</span>
-                        </div>
-                        <div class="pillar-desc">Record every victory — big and small. This is your proof when doubt shows up.</div>
-                        <div class="history-section" style="margin-top:8px;">
-                            <div class="history-label">Your Wins</div>
-                            <div class="history-entries" id="log-wins"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-wins" placeholder="Held my ground during rounds today..."/>
-                                <button class="history-btn" onclick="addLog('wins')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card active-focus">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🤍 Gratitude Archive</span>
-                            <span class="pillar-status">Your Blessings</span>
-                        </div>
-                        <div class="pillar-desc">A running record of what you're grateful for. Scroll back when life feels heavy.</div>
-                        <div class="history-section" style="margin-top:8px;">
-                            <div class="history-label">Gratitude Entries</div>
-                            <div class="history-entries" id="log-gratitude-archive"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-gratitude-archive" placeholder="Grateful for my kids, my health, this journey..."/>
-                                <button class="history-btn" onclick="addLog('gratitude-archive')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card building">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🧠 30-Day Sovereignty Plan</span>
-                            <span class="pillar-status">Active — Month 1</span>
-                        </div>
-                        <div class="pillar-desc">The goal is not another breakthrough. The goal is conditioning.</div>
-                        <div style="padding:10px 0 4px;">
-                            <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;font-weight:600;">Tap each day you complete</div>
-                            <div id="dayGrid" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
-                            <div style="height:2px;background:var(--border);margin-top:8px;">
-                                <div id="dayBar" style="height:100%;background:var(--gold);width:0%;transition:width .4s;"></div>
-                            </div>
-                            <div style="font-size:9px;color:var(--gold);margin-top:5px;font-weight:700;" id="dayPct">0 / 30 days</div>
-                        </div>
-                        <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px;">
-                            <div style="background:var(--surface2);border:1px solid var(--border);border-left:2px solid var(--gold);padding:10px 12px;font-size:12px;color:var(--cream);font-weight:500;">Phase 1 (1–10): Identity Installation — plant the roots</div>
-                            <div style="background:var(--surface2);border:1px solid var(--border);border-left:2px solid var(--sage);padding:10px 12px;font-size:12px;color:var(--cream);font-weight:500;">Phase 2 (11–20): Conditioning Under Pressure — repetition over logic</div>
-                            <div style="background:var(--surface2);border:1px solid var(--border);border-left:2px solid var(--text2);padding:10px 12px;font-size:12px;color:var(--text);font-weight:500;">Phase 3 (21–30): Embodiment & Execution — become it naturally</div>
-                        </div>
-                        <div style="margin-top:12px;">
-                            <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;font-weight:700;">Core Affirmations</div>
-                            <div style="display:flex;flex-direction:column;gap:4px;">
-                                <div style="font-size:12px;font-style:italic;color:var(--cream);padding:8px 0;border-bottom:1px solid var(--border);font-weight:500;">I am free from the need to please. I am guided by purpose, not pressure.</div>
-                                <div style="font-size:12px;font-style:italic;color:var(--cream);padding:8px 0;border-bottom:1px solid var(--border);font-weight:500;">I think independently. I trust myself. I do not shrink.</div>
-                                <div style="font-size:12px;font-style:italic;color:var(--cream);padding:8px 0;border-bottom:1px solid var(--border);font-weight:500;">Calm. Competent. Significant. Rooted. This is my frequency.</div>
-                                <div style="font-size:12px;font-style:italic;color:var(--cream);padding:8px 0;border-bottom:1px solid var(--border);font-weight:500;">I owe no one an explanation for my growth.</div>
-                                <div style="font-size:12px;font-style:italic;color:var(--cream);padding:8px 0;font-weight:500;">I am the green light. I don't wait for permission.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card building">
-                        <div class="pillar-header">
-                            <span class="pillar-name">💪 Diet & Workout Plan</span>
-                            <span class="pillar-status">Building</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">Plan, goals, progress</div>
-                            <div class="history-entries" id="log-diet-plan"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-diet-plan" placeholder="Goal weight, workout schedule, meal plan..."/>
-                                <button class="history-btn" onclick="addLog('diet-plan')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card beauty">
-                        <div class="pillar-header">
-                            <span class="pillar-name">✨ Appearance Plan</span>
-                            <span class="pillar-status">Becoming Her</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">Style goals, outfit inspo, glow-up milestones</div>
-                            <div class="history-entries" id="log-appearance-plan"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-appearance-plan" placeholder="Soft glam routine locked in, hair schedule..."/>
-                                <button class="history-btn" onclick="addLog('appearance-plan')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card also-active">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🩺 Medical & Beauty Appointments</span>
-                            <span class="pillar-status">Track It</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">Appointments, procedures, follow-ups</div>
-                            <div class="history-entries" id="log-medical"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-medical" placeholder="Vampire facial #1 — June 15, medspa confirmed..."/>
-                                <button class="history-btn" onclick="addLog('medical')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="lib-career" style="display:none;">
-                <div class="phase-strip">
-                    <div class="phase-now">Building Your Empire</div>
-                    <div class="phase-name">Career — NP · Real Estate · Digital</div>
-                </div>
-                <div class="tab-row" style="margin:12px 20px 0;border:1px solid var(--border2);">
-                    <div class="tab-btn active" onclick="careerLibTab('neuro',this)">Neuro</div>
-                    <div class="tab-btn" onclick="careerLibTab('re',this)">Real Estate</div>
-                    <div class="tab-btn" onclick="careerLibTab('digital',this)">Digital</div>
-                    <div class="tab-btn" onclick="careerLibTab('finance',this)">Finance</div>
-                </div>
-                <div id="clt-neuro">
-                    <div class="pillar-list">
-                        <div class="info-note">Two months in. Still standing. Add protocols as you learn them.</div>
-                        <div class="pillar-card active-focus">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Stroke</span>
-                                <span class="pillar-status">Active</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Notes & Protocols</div>
-                                <div class="history-entries" id="log-neuro-stroke"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-neuro-stroke" placeholder="tPA window, NIHSS scoring, LVO criteria..."/>
-                                    <button class="history-btn" onclick="addLog('neuro-stroke')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card active-focus">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Hemorrhage</span>
-                                <span class="pillar-status">Active</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Notes & Protocols</div>
-                                <div class="history-entries" id="log-neuro-hem"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-neuro-hem" placeholder="ICH score, BP targets, EVD management..."/>
-                                    <button class="history-btn" onclick="addLog('neuro-hem')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card active-focus">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Seizure</span>
-                                <span class="pillar-status">Active</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Notes & Protocols</div>
-                                <div class="history-entries" id="log-neuro-sz"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-neuro-sz" placeholder="Status epilepticus protocol, AED ladder..."/>
-                                    <button class="history-btn" onclick="addLog('neuro-sz')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card active-focus">
-                            <div class="pillar-header">
-                                <span class="pillar-name">ICP Management</span>
-                                <span class="pillar-status">Active</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Notes & Protocols</div>
-                                <div class="history-entries" id="log-neuro-icp"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-neuro-icp" placeholder="CPP targets, osmotherapy, herniation signs..."/>
-                                    <button class="history-btn" onclick="addLog('neuro-icp')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card building">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Case Library</span>
-                                <span class="pillar-status">Building</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Cases reviewed & lessons learned</div>
-                                <div class="history-entries" id="log-lib-cases"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-lib-cases" placeholder="SAH case — key lesson was early EVD..."/>
-                                    <button class="history-btn" onclick="addLog('lib-cases')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card building">
-                            <div class="pillar-header">
-                                <span class="pillar-name">10x Career Research</span>
-                                <span class="pillar-status">Future</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Fellowships, specializations, opportunities</div>
-                                <div class="history-entries" id="log-career-research"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-career-research" placeholder="NP fellowship programs, neuro certifications..."/>
-                                    <button class="history-btn" onclick="addLog('career-research')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card queued">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Pulmonary</span>
-                                <span class="pillar-status">Phase 2</span>
-                            </div>
-                        </div>
-                        <div class="pillar-card queued">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Cardiac</span>
-                                <span class="pillar-status">Phase 3</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="clt-re" style="display:none;">
-                    <div class="pillar-list">
-                        <div class="info-note">Duplex + midterm rental active. Pace Morby library available. Credit Suite resolving.</div>
-                        <div class="pillar-card active-focus">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Pace Morby — Key Concepts</span>
-                                <span class="pillar-status">Building</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Module notes & strategies</div>
-                                <div class="history-entries" id="log-lib-pace"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-lib-pace" placeholder="Subject-to structure, land trust setup..."/>
-                                    <button class="history-btn" onclick="addLog('lib-pace')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card building">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Deal Analysis</span>
-                                <span class="pillar-status">Building</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Properties, numbers, criteria for deal #3</div>
-                                <div class="history-entries" id="log-lib-deals"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-lib-deals" placeholder="Deal #3: B class, $400+ cashflow, Memphis area..."/>
-                                    <button class="history-btn" onclick="addLog('lib-deals')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card building">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Property Management Log</span>
-                                <span class="pillar-status">Active</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Tenant updates, maintenance, decisions</div>
-                                <div class="history-entries" id="log-pm-notes"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-pm-notes" placeholder="Duplex tenant paying via new system..."/>
-                                    <button class="history-btn" onclick="addLog('pm-notes')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card queued">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Acquisition #3 Pipeline</span>
-                                <span class="pillar-status">Queued</span>
-                            </div>
-                            <div class="pillar-desc">Next deal criteria, workflow, automation systems.</div>
-                        </div>
-                    </div>
-                </div>
-                <div id="clt-digital" style="display:none;">
-                    <div class="pillar-list">
-                        <div class="pillar-card active-focus">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Digital Products</span>
-                                <span class="pillar-status">Building</span>
-                            </div>
-                            <div class="pillar-desc">Ideas, products in progress, launch plans.</div>
-                            <div class="history-section" style="margin-top:8px;">
-                                <div class="history-label">Products, ideas, revenue</div>
-                                <div class="history-entries" id="log-digital"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-digital" placeholder="NP study guide, Becoming OS template..."/>
-                                    <button class="history-btn" onclick="addLog('digital')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="clt-finance" style="display:none;">
-                    <div class="pillar-list">
-                        <div class="pillar-card active-focus">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Income Tracker</span>
-                                <span class="pillar-status">Track Monthly</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">NP income, rental income, digital products</div>
-                                <div class="history-entries" id="log-income"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-income" placeholder="May: NP $8,200 · Duplex $1,400 · Midterm $2,100..."/>
-                                    <button class="history-btn" onclick="addLog('income')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card building">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Net Worth Tracker</span>
-                                <span class="pillar-status">Track Quarterly</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Assets, equity, savings</div>
-                                <div class="history-entries" id="log-networth"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-networth" placeholder="Q2 2026: Duplex equity $45k, midterm value..."/>
-                                    <button class="history-btn" onclick="addLog('networth')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pillar-card building">
-                            <div class="pillar-header">
-                                <span class="pillar-name">Savings Goals</span>
-                                <span class="pillar-status">Active</span>
-                            </div>
-                            <div class="history-section" style="margin-top:0;">
-                                <div class="history-label">Goals, progress, target dates</div>
-                                <div class="history-entries" id="log-savings"></div>
-                                <div class="history-add-row">
-                                    <input class="history-input" id="in-savings" placeholder="Deal #3 down payment: $20k goal by Dec 2026..."/>
-                                    <button class="history-btn" onclick="addLog('savings')">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="lib-homefam" style="display:none;">
-                <div class="phase-strip">
-                    <div class="phase-now">Your Foundation</div>
-                    <div class="phase-name">Home & Family Resources</div>
-                </div>
-                <div class="pillar-list">
-                    <div class="pillar-card active-focus">
-                        <div class="pillar-header">
-                            <span class="pillar-name">👑 Kids & Family Resources</span>
-                            <span class="pillar-status">Active</span>
-                        </div>
-                        <div class="pillar-desc">Learning plans, activities, milestones for your little ones.</div>
-                        <div class="history-section" style="margin-top:8px;">
-                            <div class="history-label">Resources, ideas, milestones</div>
-                            <div class="history-entries" id="log-kids-resources"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-kids-resources" placeholder="4yr old learning letters with ABC Mouse..."/>
-                                <button class="history-btn" onclick="addLog('kids-resources')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card active-focus">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🤍 Family Memories</span>
-                            <span class="pillar-status">Ongoing</span>
-                        </div>
-                        <div class="pillar-desc">Moments worth remembering. Scroll back on hard days.</div>
-                        <div class="history-section" style="margin-top:8px;">
-                            <div class="history-label">Memories & moments</div>
-                            <div class="history-entries" id="log-memories"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-memories" placeholder="Baby took 3 steps today — May 10, 2026..."/>
-                                <button class="history-btn" onclick="addLog('memories')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card building">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🛋 Home Design</span>
-                            <span class="pillar-status">In Progress</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">Interior plans, inspo, budget</div>
-                            <div class="history-entries" id="log-design-int"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-design-int" placeholder="Living room — warm neutrals, gold accents..."/>
-                                <button class="history-btn" onclick="addLog('design-int')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card building">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🌿 Outdoor Design</span>
-                            <span class="pillar-status">In Progress</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">Backyard, shed, garden plans</div>
-                            <div class="history-entries" id="log-design-back"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-design-back" placeholder="Shed cleared, pergola quote $3,200..."/>
-                                <button class="history-btn" onclick="addLog('design-back')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card building">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🛒 Shopping & Home Inventory</span>
-                            <span class="pillar-status">Running List</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">Things to buy, things to replace</div>
-                            <div class="history-entries" id="log-shopping"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-shopping" placeholder="Need: bathroom vanity, patio furniture, castor oil..."/>
-                                <button class="history-btn" onclick="addLog('shopping')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="lib-leisure" style="display:none;">
-                <div class="phase-strip">
-                    <div class="phase-now">Your Joy</div>
-                    <div class="phase-name">Leisure — Travel · Growth · Fun</div>
-                </div>
-                <div class="pillar-list">
-                    <div class="pillar-card active-focus">
-                        <div class="pillar-header">
-                            <span class="pillar-name">✈️ Trip Planning & Goal Trips</span>
-                            <span class="pillar-status">Planning</span>
-                        </div>
-                        <div class="pillar-desc">Every destination you want to reach. Plan it here, then make it real.</div>
-                        <div class="history-section" style="margin-top:8px;">
-                            <div class="history-label">Destinations, dates, budgets</div>
-                            <div class="history-entries" id="log-trips"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-trips" placeholder="Tulum — Oct 2026 · budget $2k · solo trip..."/>
-                                <button class="history-btn" onclick="addLog('trips')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card active-focus">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🌍 Bucket List</span>
-                            <span class="pillar-status">Dreaming & Doing</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">Experiences, places, things to do</div>
-                            <div class="history-entries" id="log-bucket"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-bucket" placeholder="See Northern Lights, swim with dolphins, learn to cook Thai..."/>
-                                <button class="history-btn" onclick="addLog('bucket')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card building">
-                        <div class="pillar-header">
-                            <span class="pillar-name">📚 Books, Podcasts & Content</span>
-                            <span class="pillar-status">Feeding Your Mind</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">What you're consuming and learning</div>
-                            <div class="history-entries" id="log-content"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-content" placeholder="Listening to: The Let Them Theory · Key takeaway..."/>
-                                <button class="history-btn" onclick="addLog('content')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pillar-card building">
-                        <div class="pillar-header">
-                            <span class="pillar-name">🌊 Swimming Progress</span>
-                            <span class="pillar-status">Active Season</span>
-                        </div>
-                        <div class="history-section" style="margin-top:0;">
-                            <div class="history-label">Lessons, progress, pools found</div>
-                            <div class="history-entries" id="log-swim"></div>
-                            <div class="history-add-row">
-                                <input class="history-input" id="in-swim" placeholder="Found instructor at YMCA, first lesson June 3..."/>
-                                <button class="history-btn" onclick="addLog('swim')">+</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+        <!-- Reading Sub-Nav -->
+        <div id="reading-subnav" style="position:sticky;top:52px;z-index:100;background:#0e0e0e;border-bottom:0.5px solid rgba(201,169,110,0.12);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 16px;">
+            <button class="read-tab active" onclick="showReadPanel('home',this)" style="flex-shrink:0;padding:13px 14px;background:none;border:none;border-bottom:1.5px solid #c9a96e;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:#c9a96e;cursor:pointer;transition:all .2s;white-space:nowrap;">Home</button>
+            <button class="read-tab" onclick="showReadPanel('study',this)" style="flex-shrink:0;padding:13px 14px;background:none;border:none;border-bottom:1.5px solid transparent;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;transition:all .2s;white-space:nowrap;">Deep Study</button>
+            <button class="read-tab" onclick="showReadPanel('current',this)" style="flex-shrink:0;padding:13px 14px;background:none;border:none;border-bottom:1.5px solid transparent;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;transition:all .2s;white-space:nowrap;">Current</button>
+            <button class="read-tab" onclick="showReadPanel('rituals',this)" style="flex-shrink:0;padding:13px 14px;background:none;border:none;border-bottom:1.5px solid transparent;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;transition:all .2s;white-space:nowrap;">Rituals</button>
+            <button class="read-tab" onclick="showReadPanel('integration',this)" style="flex-shrink:0;padding:13px 14px;background:none;border:none;border-bottom:1.5px solid transparent;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;transition:all .2s;white-space:nowrap;">Integration</button>
+            <button class="read-tab" onclick="showReadPanel('wisdom',this)" style="flex-shrink:0;padding:13px 14px;background:none;border:none;border-bottom:1.5px solid transparent;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;transition:all .2s;white-space:nowrap;">Wisdom</button>
         </div>
-    </div>
+
+        <div class="scroll-content" style="padding-top:0;">
+
+        <!-- ── HOME PANEL ── -->
+        <div id="readPanel-home" class="read-panel" style="display:block;">
+
+            <!-- Hero quote -->
+            <div style="position:relative;overflow:hidden;padding:40px 24px 32px;background:linear-gradient(180deg,#0a0806 0%,#0e0e0e 100%);">
+                <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(201,169,110,0.07) 0%,transparent 70%);top:-60px;left:50%;transform:translateX(-50%);pointer-events:none;"></div>
+                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:14px;text-align:center;">Reading Practice</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(22px,5.5vw,28px);font-weight:300;font-style:italic;color:#e8e0d5;line-height:1.5;text-align:center;position:relative;">"Fill your mind with truth so your life reflects it."</div>
+            </div>
+
+            <!-- Reading Modes -->
+            <div style="padding:24px 20px 8px;">
+                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:14px;">Reading Modes</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+
+                    <div onclick="showReadPanel('study', document.querySelector('[onclick*=study]'))" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.15);border-radius:14px;cursor:pointer;transition:all .25s;-webkit-tap-highlight-color:transparent;" onmouseover="this.style.borderColor='rgba(201,169,110,0.4)'" onmouseout="this.style.borderColor='rgba(201,169,110,0.15)'">
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:rgba(201,169,110,0.08);display:flex;align-items:center;justify-content:center;font-size:16px;">🧠</div>
+                            <div>
+                                <div style="font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.5px;color:#e8e0d5;font-weight:400;">Deep Study</div>
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);margin-top:2px;font-family:'Jost',sans-serif;">Neuro + Clinical Mastery</div>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:18px;font-family:'Cormorant Garamond',serif;color:#c9a96e;font-weight:300;">3</div>
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;letter-spacing:1px;">active</div>
+                        </div>
+                    </div>
+
+                    <div onclick="showReadPanel('current', document.querySelector('[onclick*=current]'))" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.15);border-radius:14px;cursor:pointer;transition:all .25s;-webkit-tap-highlight-color:transparent;" onmouseover="this.style.borderColor='rgba(201,169,110,0.4)'" onmouseout="this.style.borderColor='rgba(201,169,110,0.15)'">
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:rgba(201,169,110,0.08);display:flex;align-items:center;justify-content:center;font-size:16px;">✨</div>
+                            <div>
+                                <div style="font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.5px;color:#e8e0d5;font-weight:400;">Identity</div>
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);margin-top:2px;font-family:'Jost',sans-serif;">Mindset + Self Concept</div>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:18px;font-family:'Cormorant Garamond',serif;color:#c9a96e;font-weight:300;">2</div>
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;letter-spacing:1px;">active</div>
+                        </div>
+                    </div>
+
+                    <div onclick="showReadPanel('rituals', document.querySelector('[onclick*=rituals]'))" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.15);border-radius:14px;cursor:pointer;transition:all .25s;-webkit-tap-highlight-color:transparent;" onmouseover="this.style.borderColor='rgba(201,169,110,0.4)'" onmouseout="this.style.borderColor='rgba(201,169,110,0.15)'">
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:rgba(201,169,110,0.08);display:flex;align-items:center;justify-content:center;font-size:16px;">🌙</div>
+                            <div>
+                                <div style="font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.5px;color:#e8e0d5;font-weight:400;">Leisure</div>
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);margin-top:2px;font-family:'Jost',sans-serif;">Soft Life + Inspiration</div>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:18px;font-family:'Cormorant Garamond',serif;color:#c9a96e;font-weight:300;">1</div>
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;letter-spacing:1px;">active</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Streak + Ritual -->
+            <div style="padding:20px 20px 40px;">
+                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:14px;">Reading Streak</div>
+                <div style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.15);border-radius:14px;padding:18px;">
+                    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px;">
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:#c9a96e;line-height:1;" id="reading-streak-num">0</div>
+                        <div style="font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(201,169,110,0.5);">day streak</div>
+                    </div>
+                    <div style="display:flex;gap:4px;margin-bottom:14px;" id="reading-streak-dots"></div>
+                    <div style="height:0.5px;background:rgba(201,169,110,0.1);margin-bottom:14px;"></div>
+                    <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:8px;">Today's Ritual</div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div style="font-size:13px;color:#e8e0d5;font-family:'Jost',sans-serif;font-weight:300;">Morning Expansion</div>
+                            <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;margin-top:3px;">15 min · Identity Reading</div>
+                        </div>
+                        <button onclick="markReadingDay()" style="padding:8px 16px;background:rgba(201,169,110,0.1);border:0.5px solid rgba(201,169,110,0.3);border-radius:20px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#c9a96e;cursor:pointer;-webkit-tap-highlight-color:transparent;">Done ✓</button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /home panel -->
+
+        <!-- ── DEEP STUDY PANEL ── -->
+        <div id="readPanel-study" class="read-panel" style="display:none;">
+            <div style="padding:28px 20px 8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+                    <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,169,110,0.5);">Clinical Mastery</div>
+                    <button onclick="addStudyBook()" style="background:none;border:0.5px solid rgba(201,169,110,0.3);border-radius:20px;padding:6px 14px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(201,169,110,0.7);cursor:pointer;">+ Add</button>
+                </div>
+
+                <!-- Study tabs -->
+                <div style="display:flex;gap:0;border:0.5px solid rgba(201,169,110,0.15);border-radius:10px;overflow:hidden;margin-bottom:20px;">
+                    <button class="study-sub-tab active-sub" onclick="studySubTab('active',this)" style="flex:1;padding:10px 0;background:rgba(201,169,110,0.12);border:none;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#c9a96e;cursor:pointer;">Active</button>
+                    <button class="study-sub-tab" onclick="studySubTab('lib',this)" style="flex:1;padding:10px 0;background:none;border:none;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,224,213,0.35);cursor:pointer;">Library</button>
+                    <button class="study-sub-tab" onclick="studySubTab('archive',this)" style="flex:1;padding:10px 0;background:none;border:none;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,224,213,0.35);cursor:pointer;">Archive</button>
+                </div>
+
+                <div id="study-active">
+                    <!-- Study Card -->
+                    <div style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.15);border-radius:16px;padding:20px;margin-bottom:14px;">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+                            <div style="flex:1;">
+                                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:6px;">Guidelines</div>
+                                <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:#e8e0d5;line-height:1.3;">AANS SAH Guidelines</div>
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;margin-top:3px;">Neurocritical Care · 2024</div>
+                            </div>
+                            <button style="background:none;border:none;font-size:18px;color:rgba(201,169,110,0.35);cursor:pointer;padding:4px;">♡</button>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;letter-spacing:.5px;">Progress</div>
+                                <div style="font-size:10px;color:#c9a96e;font-family:'Jost',sans-serif;font-weight:500;">42%</div>
+                            </div>
+                            <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;">
+                                <div style="height:100%;width:42%;background:linear-gradient(90deg,#c9a96e,#e8d5aa);border-radius:2px;"></div>
+                            </div>
+                        </div>
+                        <div style="background:rgba(201,169,110,0.05);border-left:2px solid rgba(201,169,110,0.3);padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;">
+                            <div style="font-size:9px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Today's Focus</div>
+                            <div style="font-size:12px;color:rgba(232,224,213,0.7);font-family:'Cormorant Garamond',serif;font-style:italic;">Vasospasm monitoring + TCD interpretation</div>
+                        </div>
+                        <button style="width:100%;padding:11px;background:rgba(201,169,110,0.1);border:0.5px solid rgba(201,169,110,0.25);border-radius:10px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#c9a96e;cursor:pointer;">Continue Reading →</button>
+                    </div>
+
+                    <div style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.15);border-radius:16px;padding:20px;margin-bottom:14px;">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+                            <div style="flex:1;">
+                                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:6px;">Board Review</div>
+                                <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:#e8e0d5;line-height:1.3;">Neurocritical Care Board Review</div>
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;margin-top:3px;">Certification Prep · 2023</div>
+                            </div>
+                            <button style="background:none;border:none;font-size:18px;color:rgba(201,169,110,0.35);cursor:pointer;padding:4px;">♡</button>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;letter-spacing:.5px;">Progress</div>
+                                <div style="font-size:10px;color:#c9a96e;font-family:'Jost',sans-serif;font-weight:500;">28%</div>
+                            </div>
+                            <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;">
+                                <div style="height:100%;width:28%;background:linear-gradient(90deg,#c9a96e,#e8d5aa);border-radius:2px;"></div>
+                            </div>
+                        </div>
+                        <div style="background:rgba(201,169,110,0.05);border-left:2px solid rgba(201,169,110,0.3);padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;">
+                            <div style="font-size:9px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Today's Focus</div>
+                            <div style="font-size:12px;color:rgba(232,224,213,0.7);font-family:'Cormorant Garamond',serif;font-style:italic;">ICP management + herniation syndromes</div>
+                        </div>
+                        <button style="width:100%;padding:11px;background:rgba(201,169,110,0.1);border:0.5px solid rgba(201,169,110,0.25);border-radius:10px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#c9a96e;cursor:pointer;">Continue Reading →</button>
+                    </div>
+
+                    <div style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.15);border-radius:16px;padding:20px;margin-bottom:32px;">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+                            <div style="flex:1;">
+                                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:6px;">Imaging</div>
+                                <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:#e8e0d5;line-height:1.3;">MRI in Practice</div>
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;margin-top:3px;">Radiology Reference · 5th Ed</div>
+                            </div>
+                            <button style="background:none;border:none;font-size:18px;color:#c9a96e;cursor:pointer;padding:4px;">♥</button>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                                <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;letter-spacing:.5px;">Progress</div>
+                                <div style="font-size:10px;color:#c9a96e;font-family:'Jost',sans-serif;font-weight:500;">67%</div>
+                            </div>
+                            <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;">
+                                <div style="height:100%;width:67%;background:linear-gradient(90deg,#c9a96e,#e8d5aa);border-radius:2px;"></div>
+                            </div>
+                        </div>
+                        <div style="background:rgba(201,169,110,0.05);border-left:2px solid rgba(201,169,110,0.3);padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:14px;">
+                            <div style="font-size:9px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Today's Focus</div>
+                            <div style="font-size:12px;color:rgba(232,224,213,0.7);font-family:'Cormorant Garamond',serif;font-style:italic;">Diffusion-weighted imaging + stroke patterns</div>
+                        </div>
+                        <button style="width:100%;padding:11px;background:rgba(201,169,110,0.1);border:0.5px solid rgba(201,169,110,0.25);border-radius:10px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#c9a96e;cursor:pointer;">Continue Reading →</button>
+                    </div>
+                </div>
+
+                <div id="study-lib" style="display:none;">
+                    <div style="text-align:center;padding:40px 20px;color:rgba(232,224,213,0.3);font-family:'Jost',sans-serif;font-size:11px;letter-spacing:1px;">Your library appears here</div>
+                </div>
+                <div id="study-archive" style="display:none;">
+                    <div style="text-align:center;padding:40px 20px;color:rgba(232,224,213,0.3);font-family:'Jost',sans-serif;font-size:11px;letter-spacing:1px;">Completed books archived here</div>
+                </div>
+            </div>
+        </div><!-- /study panel -->
+
+        <!-- ── CURRENT READING PANEL ── -->
+        <div id="readPanel-current" class="read-panel" style="display:none;">
+            <div style="padding:28px 20px 40px;">
+
+                <!-- Kindle -->
+                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:14px;">Kindle</div>
+                <div style="background:linear-gradient(135deg,rgba(201,169,110,0.06) 0%,rgba(255,255,255,0.02) 100%);border:0.5px solid rgba(201,169,110,0.2);border-radius:18px;padding:22px;margin-bottom:24px;">
+                    <div style="display:flex;gap:16px;align-items:flex-start;">
+                        <div style="width:54px;height:72px;border-radius:6px;background:linear-gradient(145deg,#1a1710,#2a2318);border:0.5px solid rgba(201,169,110,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">📖</div>
+                        <div style="flex:1;">
+                            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:#e8e0d5;line-height:1.3;margin-bottom:3px;">The Power of Now</div>
+                            <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;">Eckhart Tolle</div>
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;margin-top:8px;">Last read: Today</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                            <div style="font-size:9px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;letter-spacing:.5px;">Progress</div>
+                            <div style="font-size:9px;color:#c9a96e;font-family:'Jost',sans-serif;">58%</div>
+                        </div>
+                        <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-bottom:16px;">
+                            <div style="height:100%;width:58%;background:linear-gradient(90deg,#c9a96e,#e8d5aa);border-radius:2px;"></div>
+                        </div>
+                        <a href="kindle://" style="display:block;width:100%;padding:11px;background:rgba(201,169,110,0.1);border:0.5px solid rgba(201,169,110,0.25);border-radius:10px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#c9a96e;text-align:center;text-decoration:none;">Open Kindle →</a>
+                    </div>
+                </div>
+
+                <!-- Audible -->
+                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:14px;">Audible</div>
+                <div style="background:linear-gradient(135deg,rgba(201,169,110,0.06) 0%,rgba(255,255,255,0.02) 100%);border:0.5px solid rgba(201,169,110,0.2);border-radius:18px;padding:22px;">
+                    <div style="display:flex;gap:16px;align-items:flex-start;">
+                        <div style="width:54px;height:72px;border-radius:6px;background:linear-gradient(145deg,#1a1710,#2a2318);border:0.5px solid rgba(201,169,110,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">🎧</div>
+                        <div style="flex:1;">
+                            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:#e8e0d5;line-height:1.3;margin-bottom:3px;">Atomic Habits</div>
+                            <div style="font-size:10px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;">James Clear</div>
+                            <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+                                <div style="display:flex;gap:2px;" id="waveform-anim">
+                                    <div style="width:2px;height:8px;background:#c9a96e;border-radius:1px;opacity:.5;animation:wave1 1.2s ease-in-out infinite;"></div>
+                                    <div style="width:2px;height:12px;background:#c9a96e;border-radius:1px;opacity:.5;animation:wave1 1.2s ease-in-out .2s infinite;"></div>
+                                    <div style="width:2px;height:6px;background:#c9a96e;border-radius:1px;opacity:.5;animation:wave1 1.2s ease-in-out .4s infinite;"></div>
+                                    <div style="width:2px;height:10px;background:#c9a96e;border-radius:1px;opacity:.5;animation:wave1 1.2s ease-in-out .1s infinite;"></div>
+                                    <div style="width:2px;height:7px;background:#c9a96e;border-radius:1px;opacity:.5;animation:wave1 1.2s ease-in-out .3s infinite;"></div>
+                                </div>
+                                <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;">2h 14m remaining</div>
+                            </div>
+                            <div style="font-size:9px;color:rgba(232,224,213,0.35);font-family:'Jost',sans-serif;margin-top:4px;">Morning Walk ritual</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <a href="audible://" style="display:block;width:100%;padding:11px;background:rgba(201,169,110,0.1);border:0.5px solid rgba(201,169,110,0.25);border-radius:10px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#c9a96e;text-align:center;text-decoration:none;">Open Audible →</a>
+                    </div>
+                </div>
+
+            </div>
+        </div><!-- /current panel -->
+
+        <!-- ── RITUALS PANEL ── -->
+        <div id="readPanel-rituals" class="read-panel" style="display:none;">
+            <div style="padding:28px 20px 40px;display:flex;flex-direction:column;gap:14px;">
+
+                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:4px;">Reading Rituals</div>
+
+                <!-- Ritual Card 1 -->
+                <div style="background:linear-gradient(135deg,rgba(201,169,110,0.08) 0%,rgba(30,20,10,0.8) 100%);border:0.5px solid rgba(201,169,110,0.2);border-radius:18px;padding:24px;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(201,169,110,0.08),transparent 70%);pointer-events:none;"></div>
+                    <div style="font-size:22px;margin-bottom:10px;">☀️</div>
+                    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:#e8e0d5;margin-bottom:4px;">Morning Expansion</div>
+                    <div style="font-size:10px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:.5px;margin-bottom:14px;">15 min · Before rounds</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(201,169,110,0.4);">·</span> Coffee + sunrise light</div>
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(201,169,110,0.4);">·</span> Identity reading</div>
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(201,169,110,0.4);">·</span> Affirmations + visualization</div>
+                    </div>
+                </div>
+
+                <!-- Ritual Card 2 -->
+                <div style="background:linear-gradient(135deg,rgba(100,120,180,0.06) 0%,rgba(10,10,20,0.8) 100%);border:0.5px solid rgba(100,120,200,0.2);border-radius:18px;padding:24px;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(100,120,200,0.06),transparent 70%);pointer-events:none;"></div>
+                    <div style="font-size:22px;margin-bottom:10px;">🧠</div>
+                    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:#e8e0d5;margin-bottom:4px;">Clinical Mastery Block</div>
+                    <div style="font-size:10px;color:rgba(150,170,230,0.6);font-family:'Jost',sans-serif;letter-spacing:.5px;margin-bottom:14px;">90 min · Deep focus</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(150,170,230,0.4);">·</span> No distractions, DND on</div>
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(150,170,230,0.4);">·</span> Neuro textbook or guidelines</div>
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(150,170,230,0.4);">·</span> Active notes + integration</div>
+                    </div>
+                </div>
+
+                <!-- Ritual Card 3 -->
+                <div style="background:linear-gradient(135deg,rgba(80,60,100,0.06) 0%,rgba(10,8,15,0.8) 100%);border:0.5px solid rgba(150,120,180,0.15);border-radius:18px;padding:24px;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(150,120,180,0.05),transparent 70%);pointer-events:none;"></div>
+                    <div style="font-size:22px;margin-bottom:10px;">🌙</div>
+                    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:#e8e0d5;margin-bottom:4px;">Night Drift Reading</div>
+                    <div style="font-size:10px;color:rgba(180,150,210,0.6);font-family:'Jost',sans-serif;letter-spacing:.5px;margin-bottom:14px;">30–45 min · Wind down</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(180,150,210,0.4);">·</span> Warm lighting, phone face down</div>
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(180,150,210,0.4);">·</span> Fiction or spiritual reading</div>
+                        <div style="font-size:11px;color:rgba(232,224,213,0.5);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px;"><span style="color:rgba(180,150,210,0.4);">·</span> No screens after closing book</div>
+                    </div>
+                </div>
+
+            </div>
+        </div><!-- /rituals panel -->
+
+        <!-- ── INTEGRATION PANEL ── -->
+        <div id="readPanel-integration" class="read-panel" style="display:none;">
+            <div style="padding:28px 20px 40px;">
+                <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:6px;">Integrate What You Read</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:rgba(232,224,213,0.4);margin-bottom:24px;">Reading without reflection is just entertainment.</div>
+
+                <div style="display:flex;flex-direction:column;gap:14px;" id="integration-entries-display"></div>
+
+                <!-- New Reflection -->
+                <div style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.15);border-radius:16px;padding:20px;margin-top:8px;">
+                    <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:14px;">New Reflection</div>
+
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:9px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;letter-spacing:.5px;margin-bottom:6px;">Book / Source</div>
+                        <input id="int-source" style="width:100%;background:rgba(255,255,255,0.04);border:0.5px solid rgba(201,169,110,0.15);border-radius:8px;padding:10px 12px;color:#e8e0d5;font-family:'Jost',sans-serif;font-size:12px;outline:none;" placeholder="The Power of Now · Chapter 3">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:9px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;letter-spacing:.5px;margin-bottom:6px;">Key Insight</div>
+                        <textarea id="int-insight" style="width:100%;background:rgba(255,255,255,0.04);border:0.5px solid rgba(201,169,110,0.15);border-radius:8px;padding:10px 12px;color:#e8e0d5;font-family:'Jost',sans-serif;font-size:12px;outline:none;resize:none;min-height:60px;" placeholder="What landed for you..."></textarea>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:9px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;letter-spacing:.5px;margin-bottom:6px;">One Action</div>
+                        <textarea id="int-action" style="width:100%;background:rgba(255,255,255,0.04);border:0.5px solid rgba(201,169,110,0.15);border-radius:8px;padding:10px 12px;color:#e8e0d5;font-family:'Jost',sans-serif;font-size:12px;outline:none;resize:none;min-height:50px;" placeholder="What will you do because of this..."></textarea>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <div style="font-size:9px;color:rgba(232,224,213,0.4);font-family:'Jost',sans-serif;letter-spacing:.5px;margin-bottom:6px;">Identity Shift</div>
+                        <textarea id="int-identity" style="width:100%;background:rgba(255,255,255,0.04);border:0.5px solid rgba(201,169,110,0.15);border-radius:8px;padding:10px 12px;color:#e8e0d5;font-family:'Jost',sans-serif;font-size:12px;outline:none;resize:none;min-height:50px;" placeholder="Who are you becoming through this..."></textarea>
+                    </div>
+                    <button onclick="saveIntegration()" style="width:100%;padding:13px;background:rgba(201,169,110,0.12);border:0.5px solid rgba(201,169,110,0.3);border-radius:12px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:#c9a96e;cursor:pointer;">Save Reflection</button>
+                </div>
+            </div>
+        </div><!-- /integration panel -->
+
+        <!-- ── WISDOM PANEL ── -->
+        <div id="readPanel-wisdom" class="read-panel" style="display:none;">
+            <div style="padding:20px 20px 40px;">
+
+                <!-- Search -->
+                <div style="position:relative;margin-bottom:14px;">
+                    <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:rgba(201,169,110,0.4);">🔍</span>
+                    <input id="wisdom-search-input" oninput="filterWisdom(this.value)" style="width:100%;background:rgba(255,255,255,0.04);border:0.5px solid rgba(201,169,110,0.15);border-radius:10px;padding:11px 14px 11px 36px;color:#e8e0d5;font-family:'Jost',sans-serif;font-size:11px;outline:none;" placeholder="Search quotes, notes, topics...">
+                </div>
+
+                <!-- Category filters -->
+                <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;-webkit-overflow-scrolling:touch;scrollbar-width:none;" id="wisdom-filters">
+                    <button class="wf-btn active-wf" onclick="setWisdomFilter('all',this)" style="flex-shrink:0;padding:7px 14px;background:rgba(201,169,110,0.12);border:0.5px solid rgba(201,169,110,0.3);border-radius:20px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#c9a96e;cursor:pointer;white-space:nowrap;">All</button>
+                    <button class="wf-btn" onclick="setWisdomFilter('neuro',this)" style="flex-shrink:0;padding:7px 14px;background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;white-space:nowrap;">Neuro</button>
+                    <button class="wf-btn" onclick="setWisdomFilter('identity',this)" style="flex-shrink:0;padding:7px 14px;background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;white-space:nowrap;">Identity</button>
+                    <button class="wf-btn" onclick="setWisdomFilter('wealth',this)" style="flex-shrink:0;padding:7px 14px;background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;white-space:nowrap;">Wealth</button>
+                    <button class="wf-btn" onclick="setWisdomFilter('peace',this)" style="flex-shrink:0;padding:7px 14px;background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;white-space:nowrap;">Peace</button>
+                    <button class="wf-btn" onclick="setWisdomFilter('life',this)" style="flex-shrink:0;padding:7px 14px;background:none;border:0.5px solid rgba(255,255,255,0.08);border-radius:20px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(232,224,213,0.4);cursor:pointer;white-space:nowrap;">Life</button>
+                </div>
+
+                <!-- Wisdom Cards -->
+                <div id="wisdom-cards-container" style="display:flex;flex-direction:column;gap:12px;">
+
+                    <div class="wisdom-card-item" data-cat="neuro" style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.12);border-radius:14px;padding:18px;position:relative;">
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:rgba(201,169,110,0.2);line-height:1;margin-bottom:4px;">"</div>
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#e8e0d5;line-height:1.6;margin-bottom:10px;">Vasospasm is a clinical diagnosis supported by imaging and transcranial Doppler.</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;letter-spacing:.5px;">SAH Guidelines</div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:8px;padding:3px 8px;background:rgba(201,169,110,0.08);border-radius:10px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:.5px;text-transform:uppercase;">neuro</span>
+                                <button onclick="this.textContent=this.textContent==='♡'?'♥':'♡'" style="background:none;border:none;color:rgba(201,169,110,0.4);font-size:16px;cursor:pointer;padding:0;">♡</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wisdom-card-item" data-cat="identity" style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.12);border-radius:14px;padding:18px;position:relative;">
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:rgba(201,169,110,0.2);line-height:1;margin-bottom:4px;">"</div>
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#e8e0d5;line-height:1.6;margin-bottom:10px;">Identity is not who you were. It is the standard you hold yourself to today.</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;letter-spacing:.5px;">Atomic Habits</div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:8px;padding:3px 8px;background:rgba(201,169,110,0.08);border-radius:10px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:.5px;text-transform:uppercase;">identity</span>
+                                <button onclick="this.textContent=this.textContent==='♡'?'♥':'♡'" style="background:none;border:none;color:rgba(201,169,110,0.4);font-size:16px;cursor:pointer;padding:0;">♡</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wisdom-card-item" data-cat="wealth" style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.12);border-radius:14px;padding:18px;position:relative;">
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:rgba(201,169,110,0.2);line-height:1;margin-bottom:4px;">"</div>
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#e8e0d5;line-height:1.6;margin-bottom:10px;">Wealth is built in the discipline of ordinary days, not in extraordinary moments.</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;letter-spacing:.5px;">The Millionaire Next Door</div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:8px;padding:3px 8px;background:rgba(201,169,110,0.08);border-radius:10px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:.5px;text-transform:uppercase;">wealth</span>
+                                <button onclick="this.textContent=this.textContent==='♡'?'♥':'♡'" style="background:none;border:none;color:rgba(201,169,110,0.4);font-size:16px;cursor:pointer;padding:0;">♡</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wisdom-card-item" data-cat="peace" style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.12);border-radius:14px;padding:18px;position:relative;">
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:rgba(201,169,110,0.2);line-height:1;margin-bottom:4px;">"</div>
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#e8e0d5;line-height:1.6;margin-bottom:10px;">The present moment is the only place where life exists. You cannot find peace anywhere else.</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;letter-spacing:.5px;">The Power of Now</div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:8px;padding:3px 8px;background:rgba(201,169,110,0.08);border-radius:10px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:.5px;text-transform:uppercase;">peace</span>
+                                <button onclick="this.textContent=this.textContent==='♡'?'♥':'♡'" style="background:none;border:none;color:rgba(201,169,110,0.4);font-size:16px;cursor:pointer;padding:0;">♡</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wisdom-card-item" data-cat="life" style="background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.12);border-radius:14px;padding:18px;position:relative;">
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:rgba(201,169,110,0.2);line-height:1;margin-bottom:4px;">"</div>
+                        <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#e8e0d5;line-height:1.6;margin-bottom:10px;">You do not rise to the level of your goals. You fall to the level of your systems.</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:'Jost',sans-serif;letter-spacing:.5px;">Atomic Habits</div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:8px;padding:3px 8px;background:rgba(201,169,110,0.08);border-radius:10px;color:rgba(201,169,110,0.6);font-family:'Jost',sans-serif;letter-spacing:.5px;text-transform:uppercase;">life</span>
+                                <button onclick="this.textContent=this.textContent==='♡'?'♥':'♡'" style="background:none;border:none;color:rgba(201,169,110,0.4);font-size:16px;cursor:pointer;padding:0;">♡</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Add Wisdom -->
+                <div style="margin-top:20px;background:rgba(255,255,255,0.02);border:0.5px solid rgba(201,169,110,0.1);border-radius:14px;padding:16px;">
+                    <div style="font-family:'Jost',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,169,110,0.4);margin-bottom:10px;">Capture a Quote</div>
+                    <textarea id="new-wisdom-text" style="width:100%;background:rgba(255,255,255,0.04);border:0.5px solid rgba(201,169,110,0.12);border-radius:8px;padding:10px 12px;color:#e8e0d5;font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;outline:none;resize:none;min-height:70px;" placeholder="Paste a quote or insight that stayed with you..."></textarea>
+                    <input id="new-wisdom-source" style="width:100%;background:rgba(255,255,255,0.04);border:0.5px solid rgba(201,169,110,0.12);border-radius:8px;padding:8px 12px;color:rgba(232,224,213,0.6);font-family:'Jost',sans-serif;font-size:11px;outline:none;margin-top:8px;" placeholder="Source...">
+                    <button onclick="addWisdomEntry()" style="width:100%;padding:11px;background:rgba(201,169,110,0.1);border:0.5px solid rgba(201,169,110,0.25);border-radius:10px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#c9a96e;cursor:pointer;margin-top:10px;">Save Wisdom</button>
+                </div>
+
+            </div>
+        </div><!-- /wisdom panel -->
+
+        </div><!-- /scroll-content -->
+    </div><!-- /library screen -->
+
     <script>
+
+    // ── READING MODULE ──────────────────────────────────────────
+    function showReadPanel(id, btn) {
+        document.querySelectorAll('.read-panel').forEach(function(p){ p.style.display='none'; });
+        var panel = document.getElementById('readPanel-'+id);
+        if (panel) panel.style.display = 'block';
+        document.querySelectorAll('.read-tab').forEach(function(t){ t.classList.remove('active'); t.style.color='rgba(232,224,213,0.4)'; t.style.borderBottomColor='transparent'; });
+        if (btn) { btn.classList.add('active'); btn.style.color='#c9a96e'; btn.style.borderBottomColor='#c9a96e'; }
+    }
+
+    function studySubTab(id, btn) {
+        ['active','lib','archive'].forEach(function(n){
+            var el = document.getElementById('study-'+n);
+            if (el) el.style.display = n===id ? 'block' : 'none';
+        });
+        document.querySelectorAll('.study-sub-tab').forEach(function(t){
+            t.classList.remove('active-sub');
+            t.style.background='none'; t.style.color='rgba(232,224,213,0.35)';
+        });
+        if (btn) { btn.classList.add('active-sub'); btn.style.background='rgba(201,169,110,0.12)'; btn.style.color='#c9a96e'; }
+    }
+
+    function setWisdomFilter(cat, btn) {
+        document.querySelectorAll('.wf-btn').forEach(function(b){
+            b.classList.remove('active-wf'); b.style.background='none'; b.style.color='rgba(232,224,213,0.4)'; b.style.borderColor='rgba(255,255,255,0.08)';
+        });
+        if (btn) { btn.classList.add('active-wf'); btn.style.background='rgba(201,169,110,0.12)'; btn.style.color='#c9a96e'; btn.style.borderColor='rgba(201,169,110,0.3)'; }
+        document.querySelectorAll('.wisdom-card-item').forEach(function(c){
+            c.style.display = (cat==='all' || c.dataset.cat===cat) ? 'block' : 'none';
+        });
+    }
+
+    function filterWisdom(query) {
+        var q = query.toLowerCase();
+        document.querySelectorAll('.wisdom-card-item').forEach(function(c){
+            c.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none';
+        });
+    }
+
+    function addWisdomEntry() {
+        var txt = document.getElementById('new-wisdom-text');
+        var src = document.getElementById('new-wisdom-source');
+        if (!txt || !txt.value.trim()) return;
+        var card = document.createElement('div');
+        card.className = 'wisdom-card-item'; card.dataset.cat = 'life';
+        card.style.cssText = 'background:rgba(255,255,255,0.025);border:0.5px solid rgba(201,169,110,0.12);border-radius:14px;padding:18px;';
+        card.innerHTML = '<div style="font-family:\'Cormorant Garamond\',serif;font-size:28px;color:rgba(201,169,110,0.2);line-height:1;margin-bottom:4px;">"</div>'
+            + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:15px;font-style:italic;color:#e8e0d5;line-height:1.6;margin-bottom:10px;">' + txt.value.trim() + '</div>'
+            + '<div style="font-size:9px;color:rgba(201,169,110,0.5);font-family:\'Jost\',sans-serif;">' + (src.value.trim() || 'Personal') + '</div>';
+        var container = document.getElementById('wisdom-cards-container');
+        if (container) container.insertBefore(card, container.firstChild);
+        txt.value = ''; src.value = '';
+        if (typeof showToast === 'function') showToast('Wisdom saved ✦');
+    }
+
+    function saveIntegration() {
+        var source = document.getElementById('int-source');
+        var insight = document.getElementById('int-insight');
+        var action = document.getElementById('int-action');
+        var identity = document.getElementById('int-identity');
+        if (!insight || !insight.value.trim()) return;
+        try {
+            var entries = JSON.parse(localStorage.getItem('integration-entries') || '[]');
+            entries.unshift({ date: new Date().toLocaleDateString(), source: source ? source.value.trim() : '', insight: insight.value.trim(), action: action ? action.value.trim() : '', identity: identity ? identity.value.trim() : '' });
+            localStorage.setItem('integration-entries', JSON.stringify(entries.slice(0,50)));
+        } catch(e) {}
+        if (source) source.value = ''; if (insight) insight.value = ''; if (action) action.value = ''; if (identity) identity.value = '';
+        if (typeof showToast === 'function') showToast('Reflection saved ✓');
+    }
+
+    function markReadingDay() {
+        try {
+            var days = JSON.parse(localStorage.getItem('reading-streak-days') || '[]');
+            var today = new Date().toDateString();
+            if (!days.includes(today)) days.push(today);
+            localStorage.setItem('reading-streak-days', JSON.stringify(days));
+            renderReadingStreak();
+        } catch(e) {}
+        if (typeof showToast === 'function') showToast('Reading logged ✓');
+    }
+
+    function renderReadingStreak() {
+        var numEl = document.getElementById('reading-streak-num');
+        var dotsEl = document.getElementById('reading-streak-dots');
+        if (!numEl || !dotsEl) return;
+        try {
+            var days = JSON.parse(localStorage.getItem('reading-streak-days') || '[]');
+            numEl.textContent = days.length;
+            var last7 = [];
+            for (var i=6; i>=0; i--) { var d = new Date(); d.setDate(d.getDate()-i); last7.push(d.toDateString()); }
+            dotsEl.innerHTML = last7.map(function(d){ var done = days.includes(d); return '<div style="width:28px;height:4px;border-radius:2px;background:' + (done ? '#c9a96e' : 'rgba(201,169,110,0.1)') + ';"></div>'; }).join('');
+        } catch(e) {}
+    }
+
+    function addStudyBook() { if (typeof showToast === 'function') showToast('Coming soon — add your book'); }
+
+    // init reading streak on library open
+    var _origShow = window.show || null;
+    window.show = function(id) {
+        if (_origShow) _origShow(id);
+        if (id === 'library') { setTimeout(renderReadingStreak, 100); }
+    };
+    // ── END READING MODULE ────────────────────────────────────────
+
     function show(id) {
         document.querySelectorAll('.screen').forEach(function(s) {
             s.classList.remove('active');
@@ -5230,7 +5529,11 @@ body::before {
     var sovAffIdx = 0;
     function openSovSection(section, itemEl) {
      if (section === 'affirmations') {
-            openAffirmations();
+            var affEl = document.getElementById('sov-affirmations');
+            if (affEl) { affEl.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+            if (typeof affShowAnchorsView === 'function') affShowAnchorsView();
+            if (typeof affRenderAnchors === 'function') affRenderAnchors();
+            if (typeof affRenderCats === 'function') affRenderCats();
             return;
         } else if (section === 'visualization') {
             openVizMenu();
@@ -5306,14 +5609,6 @@ body::before {
         if (chk)
             chk.classList.add('done');
     }
-    function closeDriftPopup() {
-        document.getElementById('driftPopupOverlay').style.display = 'none';
-        document.getElementById('driftPopupOverlay').classList.remove('active');
-        var chk = document.getElementById('sov-check-drift');
-        if (chk)
-            chk.classList.add('done');
-    }
-
     // ── AFFIRMATION POPUP (legacy single) ──
     function openAffirmationPopup(item, text) {
         var b = item.querySelector('.sub-check');
@@ -6156,6 +6451,940 @@ body::before {
                         location.reload();
                     }, 1500);
                 } catch (err) {
+                    showToast('Invalid backup file');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+    // ── PROGRESS LOG POPUP ──
+    var _popupItem = null;
+    var _popupKey = null;
+    function openLogPopup(item, habitName) {
+        _popupItem = item;
+        var key = 'sublog_' + habitName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        _popupKey = key;
+        var b = item.querySelector('.sub-check');
+        if (b && !b.classList.contains('done'))
+            b.classList.add('done');
+        var habitEl = document.getElementById('logPopupHabit');
+        if (habitEl)
+            habitEl.textContent = habitName;
+        var dateEl = document.getElementById('logPopupDate');
+        if (dateEl) {
+            var now = new Date();
+            dateEl.textContent = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()] + ' · ' + (now.getMonth() + 1) + '/' + now.getDate();
+        }
+        var ta = document.getElementById('logPopupTextarea');
+        if (ta)
+            ta.value = '';
+        renderPopupEntries(key);
+        var overlay = document.getElementById('logPopupOverlay');
+        if (overlay)
+            overlay.classList.add('active');
+        setTimeout(function() {
+            if (ta)
+                ta.focus();
+        }, 350);
+    }
+    function renderPopupEntries(key) {
+        var container = document.getElementById('logPopupEntries');
+        if (!container)
+            return;
+        var logs = [];
+        try {
+            logs = JSON.parse(localStorage.getItem(key) || '[]');
+        } catch (e) {}
+        if (logs.length === 0) {
+            container.innerHTML = '<div class="log-popup-empty">No entries yet — add your first note below</div>';
+            return;
+        }
+        container.innerHTML = logs.map(function(l, i) {
+            return '<div class="log-popup-entry">'
+            + '<span class="log-popup-entry-date">' + l.date + '</span>'
+            + '<span class="log-popup-entry-text">' + l.text + '</span>'
+            + '<span class="log-popup-entry-del" onclick="deletePopupEntry(\'' + key + '\',' + i + ')">×</span>'
+            + '</div>';
+        }).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+    function deletePopupEntry(key, i) {
+        var logs = [];
+        try {
+            logs = JSON.parse(localStorage.getItem(key) || '[]');
+        } catch (e) {}
+        logs.splice(i, 1);
+        try {
+            localStorage.setItem(key, JSON.stringify(logs));
+        } catch (e) {}
+        renderPopupEntries(key);
+        updateLogDot(_popupItem, key);
+    }
+    function saveLogEntry() {
+        var ta = document.getElementById('logPopupTextarea');
+        if (!ta || !ta.value.trim()) {
+            ta.focus();
+            return;
+        }
+        var logs = [];
+        try {
+            logs = JSON.parse(localStorage.getItem(_popupKey) || '[]');
+        } catch (e) {}
+        var now = new Date();
+        var date = (now.getMonth() + 1) + '/' + now.getDate() + ' ' + now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+        logs.push({
+            date: date,
+            text: ta.value.trim()
+        });
+        try {
+            localStorage.setItem(_popupKey, JSON.stringify(logs));
+        } catch (e) {}
+        ta.value = '';
+        renderPopupEntries(_popupKey);
+        updateLogDot(_popupItem, _popupKey);
+        showToast('Entry saved ✓');
+    }
+    function updateLogDot(item, key) {
+        if (!item)
+            return;
+        var b = item.querySelector('.sub-check');
+        if (!b)
+            return;
+        var logs = [];
+        try {
+            logs = JSON.parse(localStorage.getItem(key) || '[]');
+        } catch (e) {}
+        if (logs.length > 0)
+            b.classList.add('has-log');
+        else
+            b.classList.remove('has-log');
+    }
+    function closeLogPopup(event) {
+        if (event && event.target !== document.getElementById('logPopupOverlay'))
+            return;
+        document.getElementById('logPopupOverlay').classList.remove('active');
+    }
+    function forceCloseLogPopup() {
+        document.getElementById('logPopupOverlay').classList.remove('active');
+    }
+    function initLogDots() {
+        document.querySelectorAll('.sub-item').forEach(function(item) {
+            var nameEl = item.querySelector('.sub-name');
+            if (!nameEl)
+                return;
+            var habitName = nameEl.textContent.trim();
+            var key = 'sublog_' + habitName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            var logs = [];
+            try {
+                logs = JSON.parse(localStorage.getItem(key) || '[]');
+            } catch (e) {}
+            if (logs.length > 0) {
+                var b = item.querySelector('.sub-check');
+                if (b)
+                    b.classList.add('has-log');
+            }
+        });
+    }
+    updateDate();
+    updateCessation();
+    loadSavedGoals();
+    setInterval(updateCessation, 1000);
+    initAllLogs();
+    initDayTracker();
+    initStreak();
+    initHomeFlow();
+    buildPlanner();
+    initLogDots();
+    // Ensure carousel inits after everything is rendered
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(initCarousel, 200);
+    });
+
+
+    function csCareerTab(t, el) {
+        document.getElementById('cs-c-neuro').style.display = t === 'neuro' ? 'block' : 'none';
+        document.getElementById('cs-c-re').style.display = t === 're' ? 'block' : 'none';
+        el.closest('.tab-row').querySelectorAll('.tab-btn').forEach(function(b) {
+            b.classList.remove('active');
+        });
+        el.classList.add('active');
+    }
+    function csHealthTab(t, el) {
+        ['sovereignty', 'body', 'beauty'].forEach(function(x) {
+            var e = document.getElementById('cs-ht-' + x);
+            if (e)
+                e.style.display = x === t ? 'block' : 'none';
+        });
+        el.closest('.tab-row').querySelectorAll('.tab-btn').forEach(function(b) {
+            b.classList.remove('active');
+        });
+        el.classList.add('active');
+    }
+    function hideCarouselArrows() {
+        var p = document.getElementById('carouselPrev');
+        var n = document.getElementById('carouselNext');
+        if (p)
+            p.style.display = 'none';
+        if (n)
+            n.style.display = 'none';
+    }
+    function showCarouselArrows() {
+        var p = document.getElementById('carouselPrev');
+        var n = document.getElementById('carouselNext');
+        if (p)
+            p.style.display = 'flex';
+        if (n)
+            n.style.display = 'flex';
+        carouselGo(0);
+    }
+
+    // ── CAROUSEL ──
+    var carouselIndex = 0;
+    var carouselDomains = ['Health', 'Career', 'Leisure', 'Home & Family'];
+    function initCarousel() {
+        carouselIndex = 0;
+        var track = document.getElementById('carouselTrack');
+        var dotsEl = document.getElementById('carouselDots');
+        if (!dotsEl || !track)
+            return;
+        // Reset position
+        track.style.transition = 'none';
+        track.style.transform = 'translateX(0)';
+        void track.offsetWidth;
+        track.style.transition = 'transform .38s cubic-bezier(.4,0,.2,1)';
+        // Build dots
+        dotsEl.innerHTML = carouselDomains.map(function(_, i) {
+            return '<div class="carousel-dot' + (i === 0 ? ' active' : '') + '" onclick="carouselGo(' + i + ')"></div>';
+        }).join('');
+        // Update label and arrows
+        var lbl = document.getElementById('carouselLabel');
+        if (lbl)
+            lbl.textContent = carouselDomains[0];
+        var prev = document.getElementById('carouselPrev');
+        var next = document.getElementById('carouselNext');
+        if (prev)
+            prev.disabled = true;
+        if (next)
+            next.disabled = false;
+        // Touch swipe - remove old listeners by cloning
+        var wrap = document.getElementById('carouselWrap');
+        if (wrap) {
+            var newWrap = wrap.cloneNode(true);
+            wrap.parentNode.replaceChild(newWrap, wrap);
+            var startX = 0;
+            newWrap.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+            }, {
+                passive: true
+            });
+            newWrap.addEventListener('touchend', function(e) {
+                var dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 40) {
+                    carouselMove(dx > 0 ? -1 : 1);
+                }
+            }, {
+                passive: true
+            });
+        }
+    }
+    function carouselGo(idx) {
+        var total = 4;
+        if (idx < 0)
+            idx = 0;
+        if (idx >= total)
+            idx = total - 1;
+        carouselIndex = idx;
+        var track = document.getElementById('carouselTrack');
+        // Track is width:400%, each slide is 25% of track = 25% of track width
+        // So to show slide N we move by N * 25% of the track = N * (100/total)% of track
+        if (track)
+            track.style.transform = 'translateX(-' + (idx * 25) + '%)';
+        var dots = document.querySelectorAll('#carouselDots .carousel-dot');
+        dots.forEach(function(d, i) {
+            d.classList.toggle('active', i === idx);
+        });
+        var lbl = document.getElementById('carouselLabel');
+        if (lbl)
+            lbl.textContent = carouselDomains[idx];
+        var prev = document.getElementById('carouselPrev');
+        var next = document.getElementById('carouselNext');
+        if (prev)
+            prev.style.opacity = (idx === 0) ? '0.3' : '1';
+        if (next)
+            next.style.opacity = (idx === total - 1) ? '0.3' : '1';
+    }
+    function carouselMove(dir) {
+        carouselGo(carouselIndex + dir);
+    }
+
+    // ── BOTTOM DOCK SHEETS ──
+    function openDockSheet(name) {
+        document.querySelectorAll('.dock-sheet-overlay').forEach(function(o) {
+            o.classList.remove('active');
+        });
+        var el = document.getElementById('dockSheet-' + name);
+        if (el)
+            el.classList.add('active');
+        if (name === 'planner')
+            buildDockPlanner();
+        if (name === 'priorities')
+            loadDockPriorities();
+        if (name === 'gratitude')
+            resetDockGratitude();
+        document.querySelectorAll('.dock-btn').forEach(function(b) {
+            b.classList.remove('active-dock');
+        });
+        var btn = document.getElementById('dock-' + name);
+        if (btn)
+            btn.classList.add('active-dock');
+    }
+    function closeDockSheet(name) {
+        var el = document.getElementById('dockSheet-' + name);
+        if (el)
+            el.classList.remove('active');
+        document.querySelectorAll('.dock-btn').forEach(function(b) {
+            b.classList.remove('active-dock');
+        });
+    }
+    function closeDockSheetOutside(event, name) {
+        if (event.target === document.getElementById('dockSheet-' + name))
+            closeDockSheet(name);
+    }
+    function resetDockGratitude() {
+        ['dock-grat-step1', 'dock-grat-step2', 'dock-grat-step3'].forEach(function(id, i) {
+            var el = document.getElementById(id);
+            if (el)
+                el.style.display = i === 0 ? 'block' : 'none';
+        });
+        ['dockGrat1done', 'dockGrat2done'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el)
+                el.style.display = 'none';
+        });
+        ['dg1', 'dg2', 'dg3'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el)
+                el.value = '';
+        });
+    }
+    function dockNextGrat(num) {
+        var input = document.getElementById('dg' + num);
+        if (!input || !input.value.trim()) {
+            input.focus();
+            return;
+        }
+        try {
+            localStorage.setItem('grat' + num, input.value.trim());
+        } catch (e) {}
+        if (num === 1) {
+            var d = document.getElementById('dockGrat1done');
+            if (d) {
+                d.textContent = '✓ ' + input.value.trim();
+                d.style.display = 'block';
+            }
+            document.getElementById('dock-grat-step1').style.display = 'none';
+            document.getElementById('dock-grat-step2').style.display = 'block';
+            document.getElementById('dg2').focus();
+        } else if (num === 2) {
+            var d = document.getElementById('dockGrat2done');
+            if (d) {
+                d.textContent = '✓ ' + input.value.trim();
+                d.style.display = 'block';
+            }
+            document.getElementById('dock-grat-step2').style.display = 'none';
+            document.getElementById('dock-grat-step3').style.display = 'block';
+            document.getElementById('dg3').focus();
+        } else {
+            showToast('Gratitude saved \u2764');
+            closeDockSheet('gratitude');
+        }
+    }
+    function loadDockPriorities() {
+        ['career', 'self', 'home', 'leisure'].forEach(function(k) {
+            var el = document.getElementById('dp-' + k);
+            if (el) {
+                var saved = '';
+                try {
+                    saved = localStorage.getItem('p-' + k) || '';
+                } catch (e) {}
+                el.value = saved;
+            }
+        });
+    }
+    function saveDockPriorities() {
+        ['career', 'self', 'home', 'leisure'].forEach(function(k) {
+            var el = document.getElementById('dp-' + k);
+            if (el) {
+                try {
+                    localStorage.setItem('p-' + k, el.value);
+                } catch (e) {}
+            }
+        });
+        showToast('Priorities saved \u2713');
+        closeDockSheet('priorities');
+    }
+    function buildDockPlanner() {
+        var slots = document.getElementById('dockPlannerSlots');
+        if (!slots)
+            return;
+        var hours = [];
+        for (var i = 6; i <= 22; i++) {
+            hours.push(i);
+        }
+        slots.innerHTML = hours.map(function(h) {
+            var label = (h < 12 ? h + ':00 AM' : (h === 12 ? '12:00 PM' : ((h - 12) + ':00 PM')));
+            var prefilled = h === 6 ? 'Morning OS \u2014 gratitude, priorities, intentions' : '';
+            var saved = '';
+            try {
+                saved = localStorage.getItem('plan-' + h) || '';
+            } catch (e) {}
+            var val = saved || prefilled;
+            var cls = prefilled && !saved ? 'planner-input prefilled' : 'planner-input';
+            return '<div class="planner-slot"><div class="planner-time">' + label + '</div>'
+            + '<input class="' + cls + '" value="' + val.replace(/"/g, '&quot;') + '" placeholder="..." oninput="savePlan(' + h + ',this.value)" onfocus="unPrefill(this)" /></div>';
+        }).join('');
+    }
+    var dockCoachCtxVal = 'morning';
+    function dockSetCoachCtx(ctx, el) {
+        dockCoachCtxVal = ctx;
+        document.querySelectorAll('#dockSheet-coach .ctx-tag').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        el.classList.add('active');
+        var prompts = {
+            morning: 'What do you want to lock in before the world gets loud?',
+            stuck: "Describe where you're stuck \u2014 be specific.",
+            triggered: 'What happened? Walk me through it.',
+            evening: 'How did today go? What held, what slipped?',
+            custom: "What's on your mind?"
+        };
+        var input = document.getElementById('dockCoachInput');
+        if (input)
+            input.placeholder = prompts[ctx] || "What's on your mind?";
+    }
+    function dockAskCoach() {
+        var input = document.getElementById('dockCoachInput');
+        if (!input || !input.value.trim()) {
+            input.focus();
+            return;
+        }
+        var resp = document.getElementById('dockCoachResponse');
+        var text = document.getElementById('dockCoachText');
+        if (resp)
+            resp.style.display = 'block';
+        if (text)
+            text.textContent = 'Thinking...';
+        var userMsg = input.value.trim();
+        var g1 = '';
+        var g2 = '';
+        var g3 = '';
+        try {
+            g1 = localStorage.getItem('grat1') || '';
+            g2 = localStorage.getItem('grat2') || '';
+            g3 = localStorage.getItem('grat3') || '';
+        } catch (e) {}
+        var systemPrompt = "You are Tiffany's personal AI coach inside her Becoming OS app. She is a nurse practitioner two months into her neuro ICU role. She is focused on becoming her highest self. Be direct, warm, grounding. No fluff. Context: " + dockCoachCtxVal + " mode. Gratitude today: " + [g1, g2, g3].filter(Boolean).join(', ') + ".";
+        fetch('/api/coach', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: userMsg,
+                systemPrompt: systemPrompt
+            })
+        })
+        .then(function(r) {
+            return r.json();
+        }).then(function(d) {
+            if (text)
+                text.textContent = d.response || d.content || 'Something went wrong.';
+        }).catch(function() {
+            if (text)
+                text.textContent = 'Network error. Try again.';
+        });
+    }
+    initCarousel();
+    </script>
+
+    <!-- AFFIRMATIONS POPUP -->
+    <div id="affPopupOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,8,6,.97);z-index:9000;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
+        <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:24px;font-weight:700;">Affirmations · Read Aloud</div>
+        <div style="font-size:9px;letter-spacing:.2em;color:var(--text2);margin-bottom:16px;" id="affPopupCounter"></div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:var(--cream);line-height:1.8;max-width:340px;margin-bottom:32px;" id="affPopupText"></div>
+        <div style="font-size:11px;color:var(--text2);font-style:italic;margin-bottom:28px;">Say it like a fact. Feel it land.</div>
+        <button onclick="closeAffirmationPopup()" style="all:unset;display:inline-block;cursor:pointer;background:var(--blush);color:white;padding:14px 32px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-width:120px;text-align:center;">Done</button>
+    </div>
+
+    <!-- VISUALIZATION POPUP -->
+    <div id="vizPopupOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,8,6,.97);z-index:9000;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
+        <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:24px;font-weight:700;">Visualization · Close Your Eyes</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--cream);line-height:1.9;max-width:340px;margin-bottom:32px;" id="vizPopupText"></div>
+        <button onclick="closeVisualizationPopup()" style="all:unset;cursor:pointer;background:var(--gold);color:var(--bg);padding:14px 32px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;">Done</button>
+    </div>
+
+    <!-- READING POPUP -->
+    <div id="readingPopupOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,8,6,.88);z-index:9000;align-items:flex-end;justify-content:center;">
+        <div style="background:var(--card,var(--surface));width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 40px;max-height:85vh;overflow-y:auto;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div style="font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--cream);">📚 Reading Log</div>
+                <button onclick="closeReadingPopup()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <div style="font-size:12px;color:var(--text);font-style:italic;margin-bottom:16px;">What did you read today? Book, article, protocol — anything counts.</div>
+            <div class="checklist" style="margin-bottom:16px;">
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Read for at least 10 minutes</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Applied or noted one insight</div>
+                    </div>
+                </div>
+            </div>
+            <textarea id="readingPopupInput" class="log-popup-textarea" placeholder="Title, key insight, or what you're working through..." rows="3"></textarea>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button onclick="saveReadingEntry()" style="all:unset;cursor:pointer;background:var(--gold);color:var(--bg);padding:14px 20px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;font-weight:700;flex:1;text-align:center;">Save & Done</button>
+                <button onclick="closeReadingPopup()" style="all:unset;cursor:pointer;border:1px solid var(--border2);color:var(--text);padding:14px 18px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;text-align:center;">Skip</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FREQUENCY POPUP -->
+    <div id="freqPopupOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,8,6,.88);z-index:9000;align-items:flex-end;justify-content:center;">
+        <div style="background:var(--card,var(--surface));width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 40px;max-height:85vh;overflow-y:auto;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div style="font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--lavender);">🔮 Frequency Check</div>
+                <button onclick="closeFreqPopup()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <div style="font-size:12px;color:var(--text);font-style:italic;margin-bottom:16px;">Protect your energy. Everything you consume becomes your frequency.</div>
+            <div class="checklist">
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Stayed in my frequency today</div>
+                        <div class="check-sub">Did not shrink, perform, or over-explain</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Protected my peace</div>
+                        <div class="check-sub">Chose what I let in — conversations, content, energy</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Did not seek outside validation</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Intentional with my time today</div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="closeFreqPopup()" style="all:unset;cursor:pointer;background:var(--lavender);color:white;padding:14px 20px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;font-weight:700;width:100%;text-align:center;margin-top:16px;box-sizing:border-box;">Done</button>
+        </div>
+    </div>
+
+    <!-- DRIFT POPUP -->
+    <div id="driftPopupOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,8,6,.97);z-index:9000;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;overflow-y:auto;">
+        <div style="max-width:360px;width:100%;">
+            <div style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:16px;font-weight:700;text-align:center;">Drift Detected</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--cream);margin-bottom:6px;text-align:center;">
+                Come 
+                <em style="color:var(--blush);">Back.</em>
+            </div>
+            <div style="font-size:14px;font-style:italic;color:var(--gold);margin:16px 0;padding:14px 16px;border:1px solid var(--border2);line-height:1.8;font-family:'Cormorant Garamond',serif;text-align:center;">"Calm. Competent. Significant. Rooted. This is my frequency."</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+                <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+                    <div style="font-size:10px;letter-spacing:.2em;color:var(--blush);min-width:20px;margin-top:2px;font-weight:700;">01</div>
+                    <div style="font-size:13px;color:var(--text);line-height:1.5;">Name what happened. Don't judge it. Just see it.</div>
+                </div>
+                <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+                    <div style="font-size:10px;letter-spacing:.2em;color:var(--blush);min-width:20px;margin-top:2px;font-weight:700;">02</div>
+                    <div style="font-size:13px;color:var(--text);line-height:1.5;">
+                        Take 3 slow breaths. 
+                        <strong style="color:var(--cream);">You are still here.</strong>
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+                    <div style="font-size:10px;letter-spacing:.2em;color:var(--blush);min-width:20px;margin-top:2px;font-weight:700;">03</div>
+                    <div style="font-size:13px;color:var(--text);line-height:1.5;">
+                        Say your identity aloud: 
+                        <strong style="color:var(--cream);">Calm. Competent. Significant. Rooted.</strong>
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;padding:10px 0;">
+                    <div style="font-size:10px;letter-spacing:.2em;color:var(--blush);min-width:20px;margin-top:2px;font-weight:700;">04</div>
+                    <div style="font-size:13px;color:var(--text);line-height:1.5;">
+                        Choose one next action. Small. Concrete. 
+                        <strong style="color:var(--cream);">Execute it.</strong>
+                    </div>
+                </div>
+            </div>
+            <button onclick="closeDriftPopup()" style="all:unset;cursor:pointer;background:var(--blush);color:white;padding:14px 32px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;width:100%;text-align:center;box-sizing:border-box;">I'm Back</button>
+        </div>
+    </div>
+
+    <!-- BEAUTY AM POPUP -->
+    <div id="beautyAMPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)this.classList.remove('active')">
+        <div style="background:var(--card);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 40px;max-height:85vh;overflow-y:auto;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div style="font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--gold);">☀️ AM Routine</div>
+                <button onclick="document.getElementById('beautyAMPopup').classList.remove('active')" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <div class="checklist">
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">CeraVe Cleanser</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Vitamin C Serum</div>
+                        <div class="check-sub">Paula's Choice C15</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Niacinamide</div>
+                        <div class="check-sub">The Ordinary</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">SPF Moisturizer</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BEAUTY PM POPUP -->
+    <div id="beautyPMPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)this.classList.remove('active')">
+        <div style="background:var(--card);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 40px;max-height:85vh;overflow-y:auto;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div style="font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--gold);">🌙 PM Routine</div>
+                <button onclick="document.getElementById('beautyPMPopup').classList.remove('active')" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <div class="checklist">
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">CeraVe Cleanser</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">BHA Toner</div>
+                        <div class="check-sub">Paula's Choice</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Retinol + Collagen</div>
+                        <div class="check-sub">Night treatment</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Laneige Lip Mask</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Castor Oil on Lashes</div>
+                    </div>
+                </div>
+                <div class="check-item" onclick="toggleCheck(this)">
+                    <div class="check-box"></div>
+                    <div style="flex:1;">
+                        <div class="check-name">Kojic Lip Treatment</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- ══════════════════════════════════════════
+     AFFIRMATIONS MODULE  (single source of truth)
+     ══════════════════════════════════════════ -->
+
+<div id="sov-affirmations" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9999;flex-direction:column;overflow:hidden;">
+
+  <!-- ambient glow -->
+  <div style="position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(201,169,110,0.055) 0%,transparent 70%);top:45%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>
+
+  <!-- STATE: anchors view -->
+  <div id="aff-anchors-view" style="display:flex;flex-direction:column;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+
+    <!-- header -->
+    <div style="padding:52px 24px 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+      <span style="font-family:'Jost',sans-serif;font-weight:200;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;">Affirmations</span>
+      <button onclick="closeSovAffirmations()" style="background:none;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:22px;color:rgba(232,224,213,0.45);padding:8px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
+    </div>
+
+    <!-- daily anchors -->
+    <div style="padding:28px 24px 8px;flex-shrink:0;">
+      <div style="font-family:'Jost',sans-serif;font-weight:200;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;margin-bottom:18px;">Daily Anchors</div>
+      <div id="aff-anchor-list"></div>
+    </div>
+
+    <!-- category grid -->
+    <div style="padding:24px 24px 48px;flex-shrink:0;">
+      <div style="font-family:'Jost',sans-serif;font-weight:200;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;margin-bottom:16px;">Frequency</div>
+      <div id="aff-cat-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
+    </div>
+
+  </div><!-- /anchors view -->
+
+  <!-- STATE: carousel view (hidden until category tapped) -->
+  <div id="aff-carousel-view" style="display:none;flex-direction:column;height:100%;">
+
+    <!-- carousel header -->
+    <div style="padding:52px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0;position:relative;z-index:1;">
+      <span id="aff-carousel-label" style="font-family:'Jost',sans-serif;font-weight:200;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;"></span>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <button id="aff-fav-btn" onclick="affToggleFav()" style="background:none;border:none;cursor:pointer;font-size:22px;line-height:1;color:rgba(232,224,213,0.4);transition:color 0.25s;padding:4px;-webkit-tap-highlight-color:transparent;">♡</button>
+        <button onclick="affBackToAnchors()" style="background:none;border:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(232,224,213,0.4);padding:4px;-webkit-tap-highlight-color:transparent;">← Back</button>
+      </div>
+    </div>
+
+    <!-- card area -->
+    <div style="flex:1;display:flex;align-items:flex-start;justify-content:center;padding:15% 32px 0;overflow:hidden;position:relative;z-index:1;">
+      <div style="width:100%;overflow:hidden;">
+        <div id="aff-track" style="display:flex;will-change:transform;transition:transform 0.38s cubic-bezier(0.4,0,0.2,1);"></div>
+      </div>
+    </div>
+
+    <!-- footer -->
+    <div style="flex-shrink:0;padding:0 24px 52px;display:flex;flex-direction:column;align-items:center;gap:24px;position:relative;z-index:1;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <button onclick="affPrev()" style="background:none;border:none;cursor:pointer;color:rgba(201,169,110,0.3);font-size:24px;padding:10px;font-family:'Cormorant Garamond',serif;line-height:1;transition:color 0.2s;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;">←</button>
+        <div id="aff-dots" style="display:flex;gap:7px;align-items:center;"></div>
+        <button onclick="affNext()" style="background:none;border:none;cursor:pointer;color:rgba(201,169,110,0.3);font-size:24px;padding:10px;font-family:'Cormorant Garamond',serif;line-height:1;transition:color 0.2s;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;">→</button>
+      </div>
+      <button
+        type="button"
+        onclick="affDone()"
+        style="width:100%;max-width:280px;padding:15px 0;border-radius:40px;border:0.5px solid rgba(201,169,110,0.35);background:transparent;font-family:'Jost',sans-serif;font-weight:300;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#c9a96e;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;">
+        Done
+      </button>
+    </div>
+
+  </div><!-- /carousel view -->
+
+</div><!-- /sov-affirmations -->
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   AFFIRMATIONS MODULE  — isolated, no duplicates
+   ══════════════════════════════════════════════════════════════ */
+(function() {
+
+  // ── DATA ──────────────────────────────────────────────────────
+  var AFF_DAILY = [
+    "I am free from the need to please. I am guided by purpose, not pressure.",
+    "I think independently. I trust myself. I do not shrink.",
+    "Calm. Competent. Significant. Rooted. This is my frequency.",
+    "I am the green light. I don't wait for permission."
+  ];
+
+  var AFF_CATS = [
+    { id:'core',     label:'Core',   icon:'<circle cx="9" cy="9" r="6"/><circle cx="9" cy="9" r="2"/>' },
+    { id:'health',   label:'Health', icon:'<path d="M4 9c0-3 2-6 5-6s5 3 5 6c0 4-5 7-5 7s-5-3-5-7z"/>' },
+    { id:'wealth',   label:'Wealth', icon:'<circle cx="9" cy="9" r="7"/><path d="M9 5v8M7 7h3a2 2 0 010 4H7"/>' },
+    { id:'home',     label:'Home',   icon:'<path d="M3 10l6-7 6 7v6H3z"/><path d="M7 16v-5h4v5"/>' },
+    { id:'feminine', label:'Fem',    icon:'<path d="M9 2c-1 3-5 5-5 8a5 5 0 0010 0c0-3-4-5-5-8z"/><path d="M7 11c0 1 1 2 2 2s2-1 2-2"/>' },
+    { id:'neuro',    label:'Neuro',  icon:'<path d="M5 9a4 4 0 018 0c0 2-1 3-2 4"/><path d="M9 13v2M7 7c0-1 1-2 2-2s2 1 2 2"/><circle cx="9" cy="15" r="1"/>' },
+    { id:'peace',    label:'Peace',  icon:'<circle cx="9" cy="9" r="3"/><path d="M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.5 1.5M12.5 12.5L14 14M14 4l-1.5 1.5M5.5 12.5L4 14"/>' }
+  ];
+
+  var AFF_DATA = {
+    core:     ["I am free from the need to please. I am guided by purpose, not pressure.","I think independently. I trust myself. I do not shrink.","Calm. Competent. Significant. Rooted. This is my frequency.","I am the green light. I don't wait for permission."],
+    health:   ["My body responds to consistency, nourishment, movement, and rest.","I choose behaviors that protect my future self.","I do not punish my body. I support it.","I am becoming stronger, clearer, healthier, and more energized each day."],
+    wealth:   ["I create stability through discipline and aligned action.","I am capable of mastering difficult things.","My opportunities expand as my competence expands.","I move like someone building a legacy, not escaping survival."],
+    home:     ["Peace lives in this home because I protect it.","My children experience safety, structure, warmth, and love through me.","I am building a life my future family will be proud of.","My home reflects calm, beauty, growth, and intention."],
+    feminine: ["I no longer chase. I align.","I carry myself with softness and certainty.","I am allowed to evolve beyond old versions of myself.","My presence changes rooms before I speak."],
+    neuro:    ["I can learn complex things through repetition and presence.","I do not panic in uncertainty. I assess.","My confidence grows through preparation and experience.","I belong in high-level rooms because I earned my place there."],
+    peace:    ["I do not have to rush to be worthy.","Rest is productive when it restores me.","My nervous system is learning safety.","I can pause without falling behind."]
+  };
+
+  // ── STATE ─────────────────────────────────────────────────────
+  var affState = { cat: null, idx: 0, saved: {} };
+  var affTouchStartX = null, affTouchStartY = null;
+
+  // ── HELPERS (exposed for openSovSection) ──────────────────────
+  function affShowAnchorsView() {
+    document.getElementById('aff-anchors-view').style.display = 'flex';
+    document.getElementById('aff-carousel-view').style.display = 'none';
+  }
+  window.affShowAnchorsView = affShowAnchorsView;
+
+  function affRenderAnchors() {
+    var el = document.getElementById('aff-anchor-list');
+    if (!el) return;
+    el.innerHTML = AFF_DAILY.map(function(a) {
+      return '<div style="font-family:\'Cormorant Garamond\',serif;font-weight:300;font-size:14.5px;line-height:1.65;color:#e8e0d5;padding:10px 0 10px 14px;border-bottom:0.5px solid rgba(255,255,255,0.04);position:relative;">'
+        + '<span style="position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:3px;border-radius:50%;background:#c9a96e;opacity:0.6;display:inline-block;"></span>'
+        + a + '</div>';
+    }).join('');
+  }
+  window.affRenderAnchors = affRenderAnchors;
+
+  function affRenderCats() {
+    var el = document.getElementById('aff-cat-grid');
+    if (!el) return;
+    el.innerHTML = AFF_CATS.map(function(c) {
+      return '<button onclick="affOpenCat(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 6px;border-radius:10px;border:0.5px solid rgba(201,169,110,0.15);background:rgba(255,255,255,0.03);cursor:pointer;font-family:\'Jost\',sans-serif;font-weight:300;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:rgba(232,224,213,0.55);-webkit-tap-highlight-color:transparent;transition:all 0.25s;"'
+        + ' onmouseover="this.style.borderColor=\'rgba(201,169,110,0.5)\';this.style.background=\'rgba(201,169,110,0.1)\';this.style.color=\'#c9a96e\';"'
+        + ' onmouseout="this.style.borderColor=\'rgba(201,169,110,0.15)\';this.style.background=\'rgba(255,255,255,0.03)\';this.style.color=\'rgba(232,224,213,0.55)\';">'
+        + '<svg viewBox="0 0 18 18" style="width:18px;height:18px;opacity:0.7;" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">' + c.icon + '</svg>'
+        + '<span>' + c.label + '</span></button>';
+    }).join('');
+  }
+  window.affRenderCats = affRenderCats;
+
+  // ── OPEN (called by openSovSection) ───────────────────────────
+  window.openSovAffirmations = function() {
+    var el = document.getElementById('sov-affirmations');
+    if (el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+    affShowAnchorsView();
+    affRenderAnchors();
+    affRenderCats();
+  };
+
+  // ── CLOSE (X button) ─────────────────────────────────────────
+  window.closeSovAffirmations = function() {
+    var el = document.getElementById('sov-affirmations');
+    if (el) el.style.display = 'none';
+    document.body.style.overflow = '';
+    var chk = document.getElementById('sov-check-affirmations');
+    if (chk) chk.classList.add('done');
+    if (typeof showToast === 'function') showToast('Affirmations complete ✓');
+  };
+
+  // ── DONE button (carousel footer) ────────────────────────────
+  window.affDone = function() {
+    var chk = document.getElementById('sov-check-affirmations');
+    if (chk) chk.classList.add('done');
+    if (typeof showToast === 'function') showToast('Affirmations complete ✓');
+    affShowAnchorsView();
+  };
+
+  // ── BACK button (carousel header) ────────────────────────────
+  window.affBackToAnchors = function() {
+    affShowAnchorsView();
+  };
+
+  // ── CAROUSEL ─────────────────────────────────────────────────
+  window.affOpenCat = function(catId) {
+    affState.cat = catId;
+    affState.idx = 0;
+    var cat = AFF_CATS.find(function(c){ return c.id === catId; });
+    document.getElementById('aff-carousel-label').textContent = cat ? cat.label : '';
+    affRenderTrack();
+    affRenderDots();
+    affSetTrackPos(false);
+    affUpdateFav();
+    document.getElementById('aff-anchors-view').style.display = 'none';
+    var cv = document.getElementById('aff-carousel-view');
+    cv.style.display = 'flex';
+    cv.style.flexDirection = 'column';
+    cv.ontouchstart = function(e){ affTouchStartX = e.touches[0].clientX; affTouchStartY = e.touches[0].clientY; };
+    cv.ontouchend   = function(e){
+      if (affTouchStartX === null) return;
+      var dx = e.changedTouches[0].clientX - affTouchStartX;
+      var dy = Math.abs(e.changedTouches[0].clientY - affTouchStartY);
+      if (Math.abs(dx) > 50 && Math.abs(dx) > dy) { dx < 0 ? window.affNext() : window.affPrev(); }
+      affTouchStartX = null;
+    };
+  };
+
+  function affRenderTrack() {
+    var track = document.getElementById('aff-track');
+    if (!track) return;
+    var items = AFF_DATA[affState.cat] || [];
+    track.innerHTML = items.map(function(text) {
+      return '<div style="min-width:100%;display:flex;align-items:flex-start;justify-content:center;padding:0 8px;">'
+        + '<p style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-weight:300;font-size:clamp(22px,6.5vw,30px);line-height:1.55;text-align:center;color:#e8e0d5;position:relative;padding:0 20px;">'
+        + '“' + text + '”'
+        + '</p></div>';
+    }).join('');
+  }
+
+  function affRenderDots() {
+    var el = document.getElementById('aff-dots');
+    if (!el) return;
+    var items = AFF_DATA[affState.cat] || [];
+    el.innerHTML = items.map(function(_, i) {
+      var active = i === affState.idx;
+      return '<button onclick="affGoTo(' + i + ')" style="'
+        + 'width:' + (active ? '20px' : '4px') + ';height:4px;border-radius:' + (active ? '3px' : '50%') + ';'
+        + 'background:' + (active ? '#c9a96e' : 'rgba(201,169,110,0.2)') + ';'
+        + 'border:none;cursor:pointer;padding:0;transition:all 0.3s;-webkit-tap-highlight-color:transparent;"></button>';
+    }).join('');
+  }
+
+  function affSetTrackPos(animate) {
+    var track = document.getElementById('aff-track');
+    if (!track) return;
+    track.style.transition = animate ? 'transform 0.38s cubic-bezier(0.4,0,0.2,1)' : 'none';
+    track.style.transform = 'translateX(-' + (affState.idx * 100) + '%)';
+  }
+
+  function affUpdateFav() {
+    var btn = document.getElementById('aff-fav-btn');
+    if (!btn) return;
+    var key = affState.cat + '-' + affState.idx;
+    var isSaved = !!affState.saved[key];
+    btn.textContent = isSaved ? '♥' : '♡';
+    btn.style.color = isSaved ? '#c9a96e' : 'rgba(232,224,213,0.4)';
+  }
+
+  window.affToggleFav = function() {
+    var key = affState.cat + '-' + affState.idx;
+    affState.saved[key] = !affState.saved[key];
+    affUpdateFav();
+  };
+
+  window.affGoTo = function(i) {
+    var items = AFF_DATA[affState.cat] || [];
+    if (i < 0 || i >= items.length) return;
+    affState.idx = i;
+    affSetTrackPos(true);
+    affRenderDots();
+    affUpdateFav();
+  };
+
+  window.affPrev = function() { window.affGoTo(affState.idx - 1); };
+  window.affNext = function() { window.affGoTo(affState.idx + 1); };
+
+})();
+/* ══ end affirmations module ══ */
+</script>
+
+</script>
+
+
+</body>
+</html>
                     showToast('Invalid backup file');
                 }
             };
