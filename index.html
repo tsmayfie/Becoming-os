@@ -2379,7 +2379,7 @@
                 <div class="r-num">05</div>
                 <div class="r-text">
                     <strong>Return.</strong>
-                     Calm. Competent. Planted. One move.
+                    I am Calm. Competent. Planted. One move.
                 </div>
             </div>
         </div>
@@ -6852,13 +6852,13 @@
   };
 
   /* ── CLOSE (X button) ── */
-  window.closeSovAffirmations = function() {
+window.closeSovAffirmations = function() {
     var el = document.getElementById('sov-affirmations');
     if (el) el.style.display = 'none';
     document.body.style.overflow = '';
-    // mark complete in parent routine if that function exists
-    if (typeof markSovComplete === 'function') markSovComplete('affirmations');
-    if (typeof completeSovSection === 'function') completeSovSection('affirmations');
+    var chk = document.getElementById('sov-check-affirmations');
+    if (chk) chk.classList.add('done');
+    showToast('Affirmations complete ✓');
   };
 
   /* ── DONE button — close carousel, go back to anchors ── */
