@@ -7083,7 +7083,101 @@ window.closeSovAffirmations = function() {
   window.affNext = function() { affGoTo(affState.idx + 1); };
 
 })();
+window.affPrev = function() { affGoTo(affState.idx - 1); };
+  window.affNext = function() { affGoTo(affState.idx + 1); };
+
+})();
+
+// ── DRIFT RESET ──
+let driftCurrentStep = 0;
+
+window.openDriftPopup = function() {
+  driftCurrentStep = 0;
+  document.querySelectorAll('.drift-step').forEach((s, i) => {
+    s.style.display = i === 0 ? 'block' : 'none';
+  });
+  document.getElementById('drift-next-btn').textContent = 'Next →';
+  document.getElementById('drift-next-btn').style.display = 'block';
+  document.getElementById('drift-popup').style.display = 'flex';
+};
+
+window.closeDriftPopup = function() {
+  document.getElementById('drift-popup').style.display = 'none';
+  driftCurrentStep = 0;
+};
+
+window.driftNext = function() {
+  const total = 4;
+  if (driftCurrentStep < total - 2) {
+    driftCurrentStep++;
+    document.querySelectorAll('.drift-step').forEach((s, i) => {
+      s.style.display = i === driftCurrentStep ? 'block' : 'none';
+    });
+    if (driftCurrentStep === total - 2) {
+      document.getElementById('drift-next-btn').textContent = 'Complete Reset ✦';
+    }
+  } else if (driftCurrentStep === total - 2) {
+    driftCurrentStep++;
+    document.querySelectorAll('.drift-step').forEach((s, i) => {
+      s.style.display = i === driftCurrentStep ? 'block' : 'none';
+    });
+    document.getElementById('drift-next-btn').style.display = 'none';
+    setTimeout(window.closeDriftPopup, 3000);
+  }
+};
+
+window.checkBreath = function(el) {
+  const dot = el.querySelector('div');
+  dot.style.background = 'var(--gold,#c9a96e)';
+  dot.style.borderColor = 'var(--gold,#c9a96e)';
+};
+
 </script>
+
+<!-- DRIFT POPUP -->
+<div id="drift-popup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card,#1a1a1a);border:0.5px solid var(--border);border-radius:20px;padding:28px 24px;max-width:340px;width:100%;">
+    <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold,#c9a96e);margin-bottom:6px;">Drift Reset Protocol</div>
+    <div style="font-size:18px;font-weight:600;color:var(--text1);margin-bottom:20px;">Return to yourself.</div>
+    <div class="drift-step" data-step="0">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">STEP 1 — NAME IT</div>
+      <div style="font-size:14px;color:var(--text1);line-height:1.6;">What pulled you off? Don't judge it — just name it.</div>
+      <textarea placeholder="I drifted because..." style="width:100%;margin-top:12px;padding:10px;background:var(--bg2,#111);border:0.5px solid var(--border);border-radius:10px;color:var(--text1);font-size:13px;resize:none;min-height:70px;font-family:inherit;outline:none;box-sizing:border-box;"></textarea>
+    </div>
+    <div class="drift-step" data-step="1" style="display:none;">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">STEP 2 — RESET</div>
+      <div style="font-size:14px;color:var(--text1);line-height:1.6;">Take 3 slow breaths. You are still her.</div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+        <div onclick="checkBreath(this)" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <div style="width:20px;height:20px;border-radius:50%;border:0.5px solid var(--border);flex-shrink:0;transition:all .2s;"></div>
+          <span style="font-size:13px;color:var(--text1);">Breath one — inhale identity, exhale noise</span>
+        </div>
+        <div onclick="checkBreath(this)" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <div style="width:20px;height:20px;border-radius:50%;border:0.5px solid var(--border);flex-shrink:0;transition:all .2s;"></div>
+          <span style="font-size:13px;color:var(--text1);">Breath two — I choose presence</span>
+        </div>
+        <div onclick="checkBreath(this)" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <div style="width:20px;height:20px;border-radius:50%;border:0.5px solid var(--border);flex-shrink:0;transition:all .2s;"></div>
+          <span style="font-size:13px;color:var(--text1);">Breath three — I am back</span>
+        </div>
+      </div>
+    </div>
+    <div class="drift-step" data-step="2" style="display:none;">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">STEP 3 — RETURN</div>
+      <div style="font-size:14px;color:var(--text1);line-height:1.6;">One micro-action to re-anchor right now.</div>
+      <textarea placeholder="I will..." style="width:100%;margin-top:12px;padding:10px;background:var(--bg2,#111);border:0.5px solid var(--border);border-radius:10px;color:var(--text1);font-size:13px;resize:none;min-height:70px;font-family:inherit;outline:none;box-sizing:border-box;"></textarea>
+    </div>
+    <div class="drift-step" data-step="3" style="display:none;text-align:center;padding:10px 0;">
+      <div style="font-size:32px;margin-bottom:12px;">✦</div>
+      <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:var(--text1);line-height:1.5;">Reset complete.<br>You came back.</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:8px;">That's the whole practice.</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button onclick="closeDriftPopup()" style="flex:1;padding:12px;background:transparent;border:0.5px solid var(--border);border-radius:12px;color:var(--text2);font-size:12px;letter-spacing:.1em;cursor:pointer;font-family:inherit;">Cancel</button>
+      <button id="drift-next-btn" onclick="driftNext()" style="flex:2;padding:12px;background:var(--gold,#c9a96e);border:none;border-radius:12px;color:#0e0e0e;font-size:12px;letter-spacing:.1em;font-weight:600;cursor:pointer;font-family:inherit;">Next →</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
