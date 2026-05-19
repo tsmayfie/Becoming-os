@@ -6957,21 +6957,30 @@ body::before {
     var el = document.getElementById('aff-anchor-list');
     if (!el) return;
     el.innerHTML = AFF_DAILY.map(function(a) {
-      return '<div style="font-family:\'Cormorant Garamond\',serif;font-weight:300;font-size:14.5px;line-height:1.65;color:#e8e0d5;padding:10px 0 10px 14px;border-bottom:0.5px solid rgba(255,255,255,0.04);position:relative;">'
-        + '<span style="position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:3px;border-radius:50%;background:#c9a96e;opacity:0.6;display:inline-block;"></span>'
-        + a + '</div>';
+      return '<div style="background:linear-gradient(135deg,rgba(201,169,110,0.06) 0%,rgba(255,255,255,0.02) 100%);border:0.5px solid rgba(201,169,110,0.15);border-radius:12px;padding:16px 18px;margin-bottom:10px;position:relative;overflow:hidden;">'
+        + '<div style="position:absolute;top:0;left:0;width:2px;height:100%;background:linear-gradient(180deg,rgba(201,169,110,0.6),rgba(201,169,110,0.1));border-radius:2px 0 0 2px;"></div>'
+        + '<div style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:15px;line-height:1.65;color:#e8e0d5;padding-left:10px;">' + a + '</div>'
+        + '</div>';
     }).join('');
   }
   window.affRenderAnchors = affRenderAnchors;
 
+  var AFF_CAT_COLORS = {
+    core:     {grad:'linear-gradient(145deg,rgba(201,169,110,0.14),rgba(201,169,110,0.03))', accent:'#c9a96e', border:'rgba(201,169,110,0.3)'},
+    health:   {grad:'linear-gradient(145deg,rgba(126,200,160,0.12),rgba(126,200,160,0.02))',  accent:'#7ec8a0', border:'rgba(126,200,160,0.25)'},
+    wealth:   {grad:'linear-gradient(145deg,rgba(232,201,122,0.12),rgba(232,201,122,0.02))',  accent:'#e8c97a', border:'rgba(232,201,122,0.25)'},
+    home:     {grad:'linear-gradient(145deg,rgba(180,143,212,0.12),rgba(180,143,212,0.02))',  accent:'#b48fd4', border:'rgba(180,143,212,0.25)'},
+    feminine: {grad:'linear-gradient(145deg,rgba(212,143,160,0.12),rgba(212,143,160,0.02))',  accent:'#d48fa0', border:'rgba(212,143,160,0.25)'},
+    neuro:    {grad:'linear-gradient(145deg,rgba(138,180,212,0.12),rgba(138,180,212,0.02))',  accent:'#8ab4d4', border:'rgba(138,180,212,0.25)'},
+    peace:    {grad:'linear-gradient(145deg,rgba(160,180,200,0.12),rgba(160,180,200,0.02))',  accent:'#a0b4c8', border:'rgba(160,180,200,0.25)'}
+  };
   function affRenderCats() {
     var el = document.getElementById('aff-cat-grid');
     if (!el) return;
     el.innerHTML = AFF_CATS.map(function(c) {
-      return '<button onclick="affOpenCat(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 6px;border-radius:10px;border:0.5px solid rgba(201,169,110,0.15);background:rgba(255,255,255,0.03);cursor:pointer;font-family:\'Jost\',sans-serif;font-weight:300;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:rgba(232,224,213,0.55);-webkit-tap-highlight-color:transparent;transition:all 0.25s;"'
-        + ' onmouseover="this.style.borderColor=\'rgba(201,169,110,0.5)\';this.style.background=\'rgba(201,169,110,0.1)\';this.style.color=\'#c9a96e\';"'
-        + ' onmouseout="this.style.borderColor=\'rgba(201,169,110,0.15)\';this.style.background=\'rgba(255,255,255,0.03)\';this.style.color=\'rgba(232,224,213,0.55)\';">'
-        + '<svg viewBox="0 0 18 18" style="width:18px;height:18px;opacity:0.7;" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">' + c.icon + '</svg>'
+      var col = AFF_CAT_COLORS[c.id] || AFF_CAT_COLORS.core;
+      return '<button onclick="affOpenCat('' + c.id + '')" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 6px;border-radius:12px;border:0.5px solid ' + col.border + ';background:' + col.grad + ';cursor:pointer;font-family:'Jost',sans-serif;font-weight:300;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:' + col.accent + ';-webkit-tap-highlight-color:transparent;transition:all 0.25s;">'
+        + '<svg viewBox="0 0 18 18" style="width:18px;height:18px;" fill="none" stroke="' + col.accent + '" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">' + c.icon + '</svg>'
         + '<span>' + c.label + '</span></button>';
     }).join('');
   }
@@ -7099,5 +7108,3 @@ body::before {
 
 </body>
 </html>
-
-
