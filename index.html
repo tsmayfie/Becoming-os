@@ -5289,26 +5289,31 @@ body::before {
     }
     function openVizMenu() {
         var cards = [
-            { key:'rounds', label:'Rounds',       title:'Calm & Planted',       time:'5 min', accent:'#c9a96e', grad:'linear-gradient(135deg,rgba(201,169,110,0.10) 0%,rgba(201,169,110,0.02) 100%)', border:'rgba(201,169,110,0.25)' },
-            { key:'future', label:'Future Self',  title:'One Year From Now',    time:'7 min', accent:'#8ab4d4', grad:'linear-gradient(135deg,rgba(138,180,212,0.10) 0%,rgba(138,180,212,0.02) 100%)', border:'rgba(138,180,212,0.25)' },
-            { key:'shift',  label:'End of Shift', title:'Proud & Intact',       time:'4 min', accent:'#b48fd4', grad:'linear-gradient(135deg,rgba(180,143,212,0.10) 0%,rgba(180,143,212,0.02) 100%)', border:'rgba(180,143,212,0.25)' },
-            { key:'year3',  label:'Three Years',  title:'Growth & Expansion',   time:'8 min', accent:'#7ec8a0', grad:'linear-gradient(135deg,rgba(126,200,160,0.10) 0%,rgba(126,200,160,0.02) 100%)', border:'rgba(126,200,160,0.25)' },
-            { key:'year5',  label:'Five Years',   title:'Freedom & Abundance',  time:'10 min',accent:'#e8c97a', grad:'linear-gradient(135deg,rgba(232,201,122,0.10) 0%,rgba(232,201,122,0.02) 100%)', border:'rgba(232,201,122,0.25)' }
+            { key:'rounds', label:'Rounds',             subtitle:'Calm & Planned',      time:'8 min',  accent:'#c9a96e', leftColor:'rgba(201,169,110,0.75)', bg:'linear-gradient(135deg,#1a1510 0%,#0f0c08 100%)' },
+            { key:'future', label:'One Year From Now',  subtitle:'Future Self',          time:'10 min', accent:'#e8a87c', leftColor:'rgba(232,168,124,0.75)', bg:'linear-gradient(135deg,#1a110a 0%,#0f0906 100%)' },
+            { key:'year3',  label:'Three Years From Now',subtitle:'Growth & Expansion',  time:'12 min', accent:'#7ec8a0', leftColor:'rgba(126,200,160,0.75)', bg:'linear-gradient(135deg,#0a130e 0%,#060e09 100%)' },
+            { key:'year5',  label:'Five Years From Now', subtitle:'Freedom & Abundance', time:'15 min', accent:'#8ab4d4', leftColor:'rgba(138,180,212,0.75)', bg:'linear-gradient(135deg,#0a0f15 0%,#060a10 100%)' },
+            { key:'shift',  label:'End of Shift',        subtitle:'Proud & Intact',      time:'7 min',  accent:'#b48fd4', leftColor:'rgba(180,143,212,0.75)', bg:'linear-gradient(135deg,#110d18 0%,#0a0810 100%)' }
         ];
-        var html = '<div style="font-family:\'Jost\',sans-serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,169,110,0.6);margin-bottom:8px;text-align:center;">Visualization · Close Your Eyes</div>'
-            + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:12px;font-style:italic;color:rgba(232,224,213,0.3);text-align:center;margin-bottom:20px;letter-spacing:.5px;">Choose Your Visualization</div>'
-            + '<div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin:0 auto;">';
+        var html = '<div style="text-align:center;padding:0 0 6px;">'
+            + '<div style="font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,169,110,0.55);margin-bottom:6px;">Visualization</div>'
+            + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-style:italic;color:#e8e0d5;letter-spacing:.3px;margin-bottom:4px;">See it. Feel it. Live it.</div>'
+            + '<div style="font-family:\'Jost\',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(232,224,213,0.25);margin-bottom:24px;">Choose Your Visualization</div>'
+            + '</div>'
+            + '<div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:360px;margin:0 auto;">';
         cards.forEach(function(c) {
-            html += '<button onclick="openVizScript(\'' + c.key + '\')" style="all:unset;cursor:pointer;display:block;width:100%;background:' + c.grad + ';border:0.5px solid ' + c.border + ';border-radius:12px;padding:16px 20px;text-align:left;-webkit-tap-highlight-color:transparent;box-sizing:border-box;">'
-                + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
-                + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:16px;font-style:italic;font-weight:400;color:#e8e0d5;">' + c.label + ' — <span style="color:' + c.accent + '">' + c.title + '</span></div>'
-                + '<div style="font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(232,224,213,0.3);flex-shrink:0;margin-left:12px;">' + c.time + '</div>'
+            html += '<button type="button" onclick="openVizScript(\'' + c.key + '\')" style="display:flex;align-items:stretch;cursor:pointer;width:100%;background:' + c.bg + ';border:0.5px solid rgba(255,255,255,0.07);border-radius:14px;padding:0;text-align:left;-webkit-tap-highlight-color:transparent;box-sizing:border-box;overflow:hidden;font-family:inherit;touch-action:manipulation;">'
+                + '<div style="width:4px;background:' + c.leftColor + ';flex-shrink:0;border-radius:14px 0 0 14px;"></div>'
+                + '<div style="flex:1;padding:15px 16px;display:flex;flex-direction:column;gap:4px;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+                + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:17px;font-style:italic;color:#e8e0d5;font-weight:400;">' + c.label + '</div>'
+                + '<div style="font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(232,224,213,0.3);">' + c.time + '</div>'
                 + '</div>'
-                + '<div style="font-family:\'Jost\',sans-serif;font-size:10px;letter-spacing:.5px;color:rgba(232,224,213,0.25);font-style:italic;">Tap to begin guided visualization</div>'
-                + '</button>';
+                + '<div style="font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:' + c.accent + ';opacity:0.85;">' + c.subtitle + '</div>'
+                + '</div></button>';
         });
         html += '</div>'
-            + '<button onclick="closeVisualizationPopup()" style="all:unset;cursor:pointer;border:0.5px solid rgba(232,224,213,0.12);color:rgba(232,224,213,0.35);padding:12px 36px;font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;font-weight:300;margin-top:20px;border-radius:40px;-webkit-tap-highlight-color:transparent;">Cancel</button>';
+            + '<button type="button" onclick="closeVisualizationPopup()" style="display:inline-block;cursor:pointer;border:0.5px solid rgba(232,224,213,0.12);background:transparent;color:rgba(232,224,213,0.35);padding:12px 36px;font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;font-weight:300;margin-top:20px;border-radius:40px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;">Cancel</button>';
         var overlay = document.getElementById('vizPopupOverlay');
         overlay.style.overflowY = 'auto';
         overlay.style.justifyContent = 'flex-start';
@@ -6781,7 +6786,7 @@ body::before {
                     </div>
                 </div>
             </div>
-            <button onclick="closeDriftPopup()" style="all:unset;cursor:pointer;background:var(--blush);color:white;padding:14px 32px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;width:100%;text-align:center;box-sizing:border-box;">I'm Back</button>
+            <button type="button" onclick="closeDriftPopup()" style="display:block;cursor:pointer;background:var(--blush);color:white;padding:14px 32px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;width:100%;text-align:center;box-sizing:border-box;border:none;border-radius:8px;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation;">I'm Back</button>
         </div>
     </div>
 
@@ -6877,29 +6882,33 @@ body::before {
      AFFIRMATIONS MODULE  (single source of truth)
      ══════════════════════════════════════════ -->
 
-<div id="sov-affirmations" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9999;flex-direction:column;overflow:hidden;">
+<div id="sov-affirmations" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#0d0b08 0%,#0a0a0a 50%,#0c0a0d 100%);z-index:9999;flex-direction:column;overflow:hidden;">
 
-  <!-- ambient glow -->
-  <div style="position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(201,169,110,0.055) 0%,transparent 70%);top:45%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>
+  <!-- ambient glow orbs -->
+  <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(201,169,110,0.07) 0%,transparent 65%);top:30%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>
+  <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(180,120,140,0.05) 0%,transparent 65%);top:70%;left:20%;pointer-events:none;"></div>
 
   <!-- STATE: anchors view -->
   <div id="aff-anchors-view" style="display:flex;flex-direction:column;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;">
 
     <!-- header -->
     <div style="padding:52px 24px 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-      <span style="font-family:'Jost',sans-serif;font-weight:200;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;">Affirmations</span>
-      <button onclick="closeSovAffirmations()" style="background:none;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:22px;color:rgba(232,224,213,0.45);padding:8px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
+      <div>
+        <span style="font-family:'Jost',sans-serif;font-weight:200;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;">Affirmations</span>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:rgba(232,224,213,0.3);margin-top:3px;letter-spacing:.5px;">Speak it. Believe it. Become it.</div>
+      </div>
+      <button onclick="closeSovAffirmations()" style="background:none;border:none;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:22px;color:rgba(232,224,213,0.35);padding:8px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
     </div>
 
     <!-- daily anchors -->
     <div style="padding:28px 24px 8px;flex-shrink:0;">
-      <div style="font-family:'Jost',sans-serif;font-weight:200;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;margin-bottom:18px;">Daily Anchors</div>
+      <div style="font-family:'Jost',sans-serif;font-weight:200;font-size:8px;letter-spacing:3.5px;text-transform:uppercase;color:rgba(201,169,110,0.6);margin-bottom:16px;">Daily Anchors</div>
       <div id="aff-anchor-list"></div>
     </div>
 
     <!-- category grid -->
-    <div style="padding:24px 24px 48px;flex-shrink:0;">
-      <div style="font-family:'Jost',sans-serif;font-weight:200;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;margin-bottom:16px;">Frequency</div>
+    <div style="padding:20px 24px 48px;flex-shrink:0;">
+      <div style="font-family:'Jost',sans-serif;font-weight:200;font-size:8px;letter-spacing:3.5px;text-transform:uppercase;color:rgba(201,169,110,0.6);margin-bottom:16px;">Choose Your Focus</div>
       <div id="aff-cat-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
     </div>
 
@@ -6988,20 +6997,32 @@ body::before {
   }
   window.affShowAnchorsView = affShowAnchorsView;
 
+  var AFF_ANCHOR_SAVED = {};
   function affRenderAnchors() {
     var el = document.getElementById('aff-anchor-list');
     if (!el) return;
     el.innerHTML = '';
-    AFF_DAILY.forEach(function(a) {
+    AFF_DAILY.forEach(function(a, i) {
       var wrap = document.createElement('div');
-      wrap.style.cssText = 'background:linear-gradient(135deg,rgba(201,169,110,0.06),rgba(255,255,255,0.02));border:0.5px solid rgba(201,169,110,0.15);border-radius:12px;padding:16px 18px;margin-bottom:10px;position:relative;overflow:hidden;';
+      wrap.style.cssText = 'background:linear-gradient(135deg,rgba(201,169,110,0.07) 0%,rgba(255,255,255,0.01) 100%);border:0.5px solid rgba(201,169,110,0.18);border-radius:14px;padding:16px 16px 16px 20px;margin-bottom:10px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+      // left gold bar
       var bar = document.createElement('div');
-      bar.style.cssText = 'position:absolute;top:0;left:0;width:2px;height:100%;background:linear-gradient(180deg,rgba(201,169,110,0.6),rgba(201,169,110,0.1));border-radius:2px 0 0 2px;';
+      bar.style.cssText = 'position:absolute;top:0;left:0;width:2px;height:100%;background:linear-gradient(180deg,rgba(201,169,110,0.7),rgba(201,169,110,0.05));border-radius:2px 0 0 2px;';
+      // subtle shimmer top line
+      var shimmer = document.createElement('div');
+      shimmer.style.cssText = 'position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,169,110,0.2),transparent);';
       var text = document.createElement('div');
-      text.style.cssText = 'font-family:"Cormorant Garamond",serif;font-weight:300;font-size:15px;line-height:1.65;color:#e8e0d5;padding-left:10px;';
+      text.style.cssText = 'font-family:"Cormorant Garamond",serif;font-weight:300;font-size:15px;line-height:1.65;color:#e8e0d5;flex:1;';
       text.textContent = a;
+      // star button
+      var star = document.createElement('button');
+      star.style.cssText = 'background:none;border:none;cursor:pointer;font-size:16px;color:' + (AFF_ANCHOR_SAVED[i] ? '#c9a96e' : 'rgba(201,169,110,0.25)') + ';padding:4px;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:color 0.2s;';
+      star.textContent = AFF_ANCHOR_SAVED[i] ? '★' : '★';
+      star.onclick = (function(idx, s){ return function(e){ e.stopPropagation(); AFF_ANCHOR_SAVED[idx]=!AFF_ANCHOR_SAVED[idx]; s.style.color=AFF_ANCHOR_SAVED[idx]?'#c9a96e':'rgba(201,169,110,0.25)'; }; })(i, star);
       wrap.appendChild(bar);
+      wrap.appendChild(shimmer);
       wrap.appendChild(text);
+      wrap.appendChild(star);
       el.appendChild(wrap);
     });
   }
@@ -7023,16 +7044,19 @@ body::before {
     AFF_CATS.forEach(function(c) {
       var col = AFF_CAT_COLORS[c.id] || AFF_CAT_COLORS.core;
       var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 6px;border-radius:12px;border:0.5px solid ' + col.border + ';background:' + col.grad + ';cursor:pointer;font-family:"Jost",sans-serif;font-weight:300;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:' + col.accent + ';-webkit-tap-highlight-color:transparent;transition:all 0.25s;';
+      btn.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px 6px 15px;border-radius:16px;border:0.5px solid ' + col.border + ';background:' + col.grad + ';cursor:pointer;font-family:"Jost",sans-serif;font-weight:300;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:' + col.accent + ';-webkit-tap-highlight-color:transparent;transition:all 0.2s;position:relative;overflow:hidden;';
+      var sh = document.createElement('div');
+      sh.style.cssText = 'position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,' + col.accent + '44,transparent);';
+      btn.appendChild(sh);
       btn.onclick = (function(id){ return function(){ affOpenCat(id); }; })(c.id);
       var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
       svg.setAttribute('viewBox','0 0 18 18');
       svg.setAttribute('fill','none');
       svg.setAttribute('stroke', col.accent);
-      svg.setAttribute('stroke-width','1.2');
+      svg.setAttribute('stroke-width','1.3');
       svg.setAttribute('stroke-linecap','round');
       svg.setAttribute('stroke-linejoin','round');
-      svg.style.cssText = 'width:18px;height:18px;flex-shrink:0;';
+      svg.style.cssText = 'width:22px;height:22px;flex-shrink:0;';
       svg.innerHTML = c.icon;
       var span = document.createElement('span');
       span.textContent = c.label;
