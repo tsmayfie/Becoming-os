@@ -7267,7 +7267,7 @@ body::before {
 }
 
 .aff-card-wrap {
-  flex-shrink:0;width:100%;padding:0 20px;box-sizing:border-box;
+  flex-shrink:0;width:100%;padding:0 24px;box-sizing:border-box;
 }
 .aff-card {
   border-radius:22px;padding:36px 28px;
@@ -7316,7 +7316,7 @@ body::before {
   <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(180,100,140,0.05) 0%,transparent 65%);bottom:15%;right:5%;pointer-events:none;"></div>
 
   <!-- MAIN SCROLL CONTAINER -->
-  <div style="display:flex;flex-direction:column;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;z-index:1;">
+  <div style="display:flex;flex-direction:column;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;z-index:1;padding-left:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right));">
 
     <!-- HEADER -->
     <div style="padding:52px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0;">
@@ -7331,7 +7331,7 @@ body::before {
     <!-- CATEGORY TABS — horizontal scroll, at top -->
     <div style="padding:24px 20px 0;flex-shrink:0;">
       <div style="font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,169,110,0.5);margin-bottom:14px;">Choose Your Focus</div>
-      <div id="aff-tabs-row" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
+      <div id="aff-tabs-row" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;padding-right:20px;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;"></div>
     </div>
 
     <!-- CATEGORY TITLE -->
@@ -7342,7 +7342,7 @@ body::before {
 
     <!-- CARD CAROUSEL -->
     <div style="padding:20px 0 0;flex-shrink:0;">
-      <div style="overflow:hidden;position:relative;">
+      <div id="aff-carousel-outer" style="overflow:hidden;position:relative;width:100%;">
         <div id="aff-track" style="display:flex;will-change:transform;transition:transform 0.38s cubic-bezier(0.4,0,0.2,1);"></div>
       </div>
       <!-- swipe hint + dots -->
@@ -7666,7 +7666,11 @@ body::before {
   function updateTrack() {
     var track = document.getElementById('aff-track');
     if (!track) return;
-    var w = track.parentElement ? track.parentElement.offsetWidth : window.innerWidth;
+    var outer = document.getElementById('aff-carousel-outer');
+    var w = (outer && outer.offsetWidth > 0) ? outer.offsetWidth : window.innerWidth;
+    // Sync every card wrap to exact width so carousel slides cleanly
+    var wraps = track.querySelectorAll('.aff-card-wrap');
+    wraps.forEach(function(wp){ wp.style.width = w + 'px'; });
     track.style.transform = 'translateX(-' + (state.idx * w) + 'px)';
     // update dots
     var dots = document.querySelectorAll('#aff-dots .aff-dot');
