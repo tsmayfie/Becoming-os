@@ -5287,11 +5287,11 @@ body::before {
     }
     function openVizMenu() {
         var cards = [
-            { key:'rounds', label:'Rounds',             subtitle:'Calm & Planned',      time:'8 min',  accent:'#c9a96e', leftColor:'rgba(201,169,110,0.75)', bg:'linear-gradient(135deg,#1a1510 0%,#0f0c08 100%)' },
-            { key:'future', label:'One Year From Now',  subtitle:'Future Self',          time:'10 min', accent:'#e8a87c', leftColor:'rgba(232,168,124,0.75)', bg:'linear-gradient(135deg,#1a110a 0%,#0f0906 100%)' },
-            { key:'year3',  label:'Three Years From Now',subtitle:'Growth & Expansion',  time:'12 min', accent:'#7ec8a0', leftColor:'rgba(126,200,160,0.75)', bg:'linear-gradient(135deg,#0a130e 0%,#060e09 100%)' },
-            { key:'year5',  label:'Five Years From Now', subtitle:'Freedom & Abundance', time:'15 min', accent:'#8ab4d4', leftColor:'rgba(138,180,212,0.75)', bg:'linear-gradient(135deg,#0a0f15 0%,#060a10 100%)' },
-            { key:'shift',  label:'End of Shift',        subtitle:'Proud & Intact',      time:'7 min',  accent:'#b48fd4', leftColor:'rgba(180,143,212,0.75)', bg:'linear-gradient(135deg,#110d18 0%,#0a0810 100%)' }
+            { key:'rounds', label:'Rounds',              subtitle:'Calm & Planned',      time:'8 min',  accent:'#c9a96e', leftColor:'rgba(201,169,110,0.85)', img:'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80', overlay:'linear-gradient(135deg,rgba(8,6,2,0.75),rgba(25,18,5,0.55))' },
+            { key:'future', label:'One Year From Now',   subtitle:'Future Self',          time:'10 min', accent:'#e8a87c', leftColor:'rgba(232,168,124,0.85)', img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80', overlay:'linear-gradient(135deg,rgba(8,5,2,0.72),rgba(30,16,4,0.52))' },
+            { key:'year3',  label:'Three Years From Now', subtitle:'Growth & Expansion',  time:'12 min', accent:'#7ec8a0', leftColor:'rgba(126,200,160,0.85)', img:'https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=800&q=80', overlay:'linear-gradient(135deg,rgba(2,10,5,0.72),rgba(5,22,12,0.52))' },
+            { key:'year5',  label:'Five Years From Now',  subtitle:'Freedom & Abundance', time:'15 min', accent:'#8ab4d4', leftColor:'rgba(138,180,212,0.85)', img:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&q=80', overlay:'linear-gradient(135deg,rgba(2,6,12,0.70),rgba(4,14,24,0.50))' },
+            { key:'shift',  label:'End of Shift',         subtitle:'Proud & Intact',      time:'7 min',  accent:'#b48fd4', leftColor:'rgba(180,143,212,0.85)', img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', overlay:'linear-gradient(135deg,rgba(8,4,12,0.78),rgba(18,8,24,0.60))' }
         ];
         var html = '<div style="text-align:center;padding:0 0 6px;">'
             + '<div style="font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,169,110,0.55);margin-bottom:6px;">Visualization</div>'
@@ -5300,14 +5300,16 @@ body::before {
             + '</div>'
             + '<div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:360px;margin:0 auto;">';
         cards.forEach(function(c) {
-            html += '<button type="button" onclick="openVizScript(\'' + c.key + '\')" style="display:flex;align-items:stretch;cursor:pointer;width:100%;background:' + c.bg + ';border:0.5px solid rgba(255,255,255,0.07);border-radius:14px;padding:0;text-align:left;-webkit-tap-highlight-color:transparent;box-sizing:border-box;overflow:hidden;font-family:inherit;touch-action:manipulation;">'
-                + '<div style="width:4px;background:' + c.leftColor + ';flex-shrink:0;border-radius:14px 0 0 14px;"></div>'
-                + '<div style="flex:1;padding:15px 16px;display:flex;flex-direction:column;gap:4px;">'
-                + '<div style="display:flex;justify-content:space-between;align-items:center;">'
-                + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:17px;font-style:italic;color:#e8e0d5;font-weight:400;">' + c.label + '</div>'
-                + '<div style="font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(232,224,213,0.3);">' + c.time + '</div>'
+            html += '<button type="button" onclick="openVizScript(\'' + c.key + '\')" style="display:block;cursor:pointer;width:100%;border:0.5px solid rgba(255,255,255,0.12);border-radius:16px;padding:0;text-align:left;-webkit-tap-highlight-color:transparent;box-sizing:border-box;overflow:hidden;font-family:inherit;touch-action:manipulation;position:relative;height:90px;">'
+                + '<div style="position:absolute;inset:0;background-image:url(' + c.img + ');background-size:cover;background-position:center;"></div>'
+                + '<div style="position:absolute;inset:0;background:' + c.overlay + ';"></div>'
+                + '<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:' + c.leftColor + ';"></div>'
+                + '<div style="position:relative;z-index:1;padding:14px 16px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+                + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-style:italic;color:#fff;font-weight:400;text-shadow:0 1px 10px rgba(0,0,0,0.8);">' + c.label + '</div>'
+                + '<div style="font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.4);padding:3px 8px;border-radius:20px;">' + c.time + '</div>'
                 + '</div>'
-                + '<div style="font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:' + c.accent + ';opacity:0.85;">' + c.subtitle + '</div>'
+                + '<div style="font-family:\'Jost\',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:' + c.accent + ';text-shadow:0 1px 6px rgba(0,0,0,0.9);">' + c.subtitle + '</div>'
                 + '</div></button>';
         });
         html += '</div>'
@@ -5343,11 +5345,15 @@ body::before {
                 i++;
             } else {
                 clearInterval(interval);
-                // Add back + done buttons after script finishes
+                // Remove any previously appended button rows to prevent duplicates
+                var oldBtns = el.parentNode.querySelectorAll('.viz-btn-row');
+                oldBtns.forEach(function(b){ b.parentNode.removeChild(b); });
+                // Add back + done buttons
                 var btns = document.createElement('div');
+                btns.className = 'viz-btn-row';
                 btns.style.cssText = 'display:flex;gap:12px;margin-top:32px;justify-content:center;';
-                btns.innerHTML = '<button onclick="openVizMenu()" style="all:unset;cursor:pointer;border:0.5px solid rgba(232,224,213,0.15);color:rgba(232,224,213,0.4);padding:12px 24px;font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;border-radius:40px;-webkit-tap-highlight-color:transparent;">← Back</button>'
-                    + '<button onclick="closeVisualizationPopup()" style="all:unset;cursor:pointer;background:rgba(201,169,110,0.15);border:0.5px solid rgba(201,169,110,0.4);color:#c9a96e;padding:12px 28px;font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;border-radius:40px;-webkit-tap-highlight-color:transparent;">Done</button>';
+                btns.innerHTML = '<button type="button" onclick="openVizMenu()" style="cursor:pointer;border:0.5px solid rgba(232,224,213,0.15);background:transparent;color:rgba(232,224,213,0.4);padding:12px 24px;font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;border-radius:40px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;">← Back</button>'
+                    + '<button type="button" onclick="closeVisualizationPopup()" style="cursor:pointer;background:rgba(201,169,110,0.15);border:0.5px solid rgba(201,169,110,0.4);color:#c9a96e;padding:12px 28px;font-family:\'Jost\',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;border-radius:40px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;">Done</button>';
                 el.parentNode.appendChild(btns);
             }
         }, 110);
