@@ -7270,8 +7270,6 @@ body::before {
   scrollbar-width:none;
   -ms-overflow-style:none;
   scroll-behavior:smooth;
-  scroll-padding-left: calc(50% - 36px);
-  scroll-padding-right: calc(50% - 36px);
 }
 .aff-tabs-row::-webkit-scrollbar {
   display:none;
@@ -7600,10 +7598,16 @@ body::before {
       btn.onclick = (function(id){ return function(){ state.catId=id; state.idx=0; renderAll(); }; })(c.id);
       el.appendChild(btn);
     });
-    // scroll active tab into view
+    // scroll active tab into view - centered
     setTimeout(function(){
       var active = el.querySelector('.active');
-      if (active) active.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+      if (active) {
+        // Manually calculate the scroll position to center the active tab
+        var containerCenter = el.offsetWidth / 2;
+        var tabCenter = active.offsetLeft + (active.offsetWidth / 2);
+        var targetScroll = tabCenter - containerCenter;
+        el.scrollLeft = targetScroll;
+      }
     }, 50);
   }
 
