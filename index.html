@@ -7265,10 +7265,13 @@ body::before {
   overflow-x:auto;
   padding-bottom:4px;
   padding-right:20px;
+  padding-left:20px;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
   -ms-overflow-style:none;
   scroll-behavior:smooth;
+  scroll-padding-left: calc(50% - 36px);
+  scroll-padding-right: calc(50% - 36px);
 }
 .aff-tabs-row::-webkit-scrollbar {
   display:none;
