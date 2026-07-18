@@ -7727,10 +7727,34 @@ body::before {
 
   window.affNext = function() {
     var items = getItems();
-    if (state.idx < items.length - 1) { state.idx++; if(speaking){window.speechSynthesis.cancel();speaking=false;} updateTrack(); }
+    if (state.idx < items.length - 1) {
+      state.idx++;
+      if(speaking){window.speechSynthesis.cancel();speaking=false;}
+      updateTrack();
+    } else {
+      // Continuous swipe: roll into the next topic instead of stopping
+      var catIdx = AFF_CATS.findIndex(function(c){ return c.id === state.catId; });
+      var nextCat = AFF_CATS[(catIdx + 1) % AFF_CATS.length];
+      state.catId = nextCat.id;
+      state.idx = 0;
+      if(speaking){window.speechSynthesis.cancel();speaking=false;}
+      renderAll();
+    }
   };
   window.affPrev = function() {
-    if (state.idx > 0) { state.idx--; if(speaking){window.speechSynthesis.cancel();speaking=false;} updateTrack(); }
+    if (state.idx > 0) {
+      state.idx--;
+      if(speaking){window.speechSynthesis.cancel();speaking=false;}
+      updateTrack();
+    } else {
+      // Continuous swipe backward: roll into the previous topic's last card
+      var catIdx = AFF_CATS.findIndex(function(c){ return c.id === state.catId; });
+      var prevCat = AFF_CATS[(catIdx - 1 + AFF_CATS.length) % AFF_CATS.length];
+      state.catId = prevCat.id;
+      state.idx = (AFF_DATA[prevCat.id] || []).length - 1;
+      if(speaking){window.speechSynthesis.cancel();speaking=false;}
+      renderAll();
+    }
   };
 
   // ── RENDER ANCHORS ────────────────────────────────────────────
